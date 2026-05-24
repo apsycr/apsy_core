@@ -1,0 +1,10 @@
+requests
+websockets
+fastapi
+uvicorn
+websocket-client
+pyyaml
+apscheduler
+mysql-connector-python
+cryptography
+mariadb

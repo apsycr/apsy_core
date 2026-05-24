@@ -1,0 +1,86 @@
+services:
+
+  mariadb:
+
+    image: mariadb:10.11
+
+    container_name: apsy_mariadb
+
+    restart: unless-stopped
+
+    ports:
+      - "3306:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: America/Costa_Rica
+
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+
+    volumes:
+      - ${APSY_DATA}/mariadb:/var/lib/mysql
+      - ./mariadb/my.cnf:/etc/mysql/conf.d/apsy.cnf:ro
+
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    stop_grace_period: 30s
+
+  apsy_core:
+
+    build:
+      context: ./apsy_core
+
+    container_name: apsy_core
+
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    environment:
+      TZ: America/Costa_Rica
+
+    ports:
+      - "9000:9000"
+
+    volumes:
+      - ./apsy_core:/app
+      - ${APSY_DATA}/config:/config
+      - ${APSY_DATA}/logs:/logs
+      - ${APSY_DATA}/uploads:/uploads
+
+    depends_on:
+      - mariadb
+
+  nginx:
+
+    image: nginx:latest
+
+    restart: unless-stopped
+
+    container_name: nginx
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+
+      - C:/apsy/dev:/var/www/dev
+
+      - ${APSY_DATA}/config/ssl:/ssl
+
+      - ${APSY_DATA}/logs:/logs
+
+    environment:
+      - TZ=America/Costa_Rica

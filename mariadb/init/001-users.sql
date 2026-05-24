@@ -1,0 +1,3 @@
+CREATE USER IF NOT EXISTS 'ws_user'@'%' IDENTIFIED BY 'apsyws20';
+
+CREATE USER IF NOT EXISTS 'itech01'@'%' IDENTIFIED BY 'Login2Help';
