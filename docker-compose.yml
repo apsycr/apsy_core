@@ -76,7 +76,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
 
-      - C:/apsy/dev:/var/www/dev
+      - ${APSY_DATA}/apsy_fe:/var/www/apsy_fe
 
       - ${APSY_DATA}/config/ssl:/ssl
 
