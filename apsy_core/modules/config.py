@@ -39,7 +39,6 @@ def ensure_encrypted_config(env_cfg, env_path):
             changed = True
 
     if changed:
-        print(env_path)
         with open(env_path, "w", encoding="utf-8") as f:
 
             yaml.safe_dump(
@@ -57,9 +56,9 @@ def load_config():
     # config base
     with open(BASE_DIR / "config.yml", "r", encoding="utf-8") as f:
 
-        base = yaml.safe_load(f)
+        base = ensure_encrypted_config(yaml.safe_load(f),BASE_DIR / "config.yml")
 
-    env_name = base.get("env", os.getenv("ENV", "dev"))
+    env_name = base.get("env", os.getenv("ENV", "dev")).lower()
 
     env_path = BASE_DIR / "environment" / f"{env_name}.yml"
 
@@ -73,8 +72,7 @@ def load_config():
             env_cfg = yaml.safe_load(f)
 
         # auto encrypt del environment
-        env_cfg = ensure_encrypted_config(env_cfg, env_path)
-
+        #env_cfg = ensure_encrypted_config(env_cfg, env_path)
         # merge final
         base.update(env_cfg)
 

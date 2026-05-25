@@ -46,7 +46,7 @@ signal.signal(signal.SIGINT, shutdown_handler)
 
 
 def main():
-    logger.info("Starting ws-server-local_1")
+    logger.info("Starting APSY_CORE")
     config = load_config()
     init_pools() #INICIALIZAR BASE DE DATOS
     

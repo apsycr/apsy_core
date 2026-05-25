@@ -25,6 +25,7 @@ services:
     volumes:
       - ${APSY_DATA}/mariadb:/var/lib/mysql
       - ./mariadb/my.cnf:/etc/mysql/conf.d/apsy.cnf:ro
+      - ./mariadb/init:/docker-entrypoint-initdb.d
 
     healthcheck:
       test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]

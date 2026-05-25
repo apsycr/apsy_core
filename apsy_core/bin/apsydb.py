@@ -204,9 +204,9 @@ SET collation_connection = 'utf8mb4_unicode_ci';
 
         "CHARSET=utf8;": "CHARSET=utf8mb4;",
 
-        "CHARSET=utf8mb3 ": "CHARSET=utf8mb4",
+        "CHARSET=utf8mb3 ": "CHARSET=utf8mb4 ",
 
-        "CHARSET=utf8 ": "CHARSET=utf8mb4",
+        "CHARSET=utf8 ": "CHARSET=utf8mb4 ",
 
         "CHARACTER SET utf8mb3;": "CHARACTER SET utf8mb4;",
 
@@ -220,13 +220,13 @@ SET collation_connection = 'utf8mb4_unicode_ci';
 
         "SET NAMES utf8 ": "SET NAMES utf8mb4 ",
 
-        "character_set_client  = utf8 ": "character_set_client  = utf8mb4",
+        "character_set_client  = utf8 ": "character_set_client  = utf8mb4 ",
 
-        "character_set_results = utf8 ": "character_set_results = utf8mb4",
+        "character_set_results = utf8 ": "character_set_results = utf8mb4 ",
 
-        "character_set_client = utf8 ": "character_set_client = utf8mb4",
+        "character_set_client = utf8 ": "character_set_client = utf8mb4 ",
 
-        "character_set_results = utf8 ": "character_set_results = utf8mb4",
+        "character_set_results = utf8 ": "character_set_results = utf8mb4 ",
 
         "character_set_client  = utf8;": "character_set_client  = utf8mb4;",
 
