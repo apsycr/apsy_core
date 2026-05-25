@@ -147,8 +147,18 @@ def access_local(config, endpoint, payload=None):
         timeout=config["production_api"]["timeout"]
     )
 
-    r.raise_for_status()
+    try:
 
+        r.raise_for_status()
+
+    except requests.HTTPError as e:
+
+        logger.error(f"API Error: {e}")
+        
+        return {
+            "success": False,
+            "error": str(e)
+        }
     return r.json()
 
 

@@ -26,7 +26,8 @@ def start_api(config):
             "/docs",
             "/openapi.json",
             "/health",
-            "/ws/"
+            "/ws/",
+            "/internal/"
         ]
 
         if any(request.url.path.startswith(p) for p in public_paths):

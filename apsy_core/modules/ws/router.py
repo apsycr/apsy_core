@@ -13,7 +13,7 @@ async def websocket_entry(websocket: WebSocket):
     await websocket.accept()
 
     try:
-        while true:
+        while True:
             data = await websocket.receive_json()
 
             msg_type = data.get("type")

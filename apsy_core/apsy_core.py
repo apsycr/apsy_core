@@ -72,14 +72,15 @@ def main():
     )
 
     if config['ws_server']['client']:
+        logger.info("Starting WS Client")
         ws_thread = threading.Thread(
             target=start_ws_client,
             args=(config,shutdown_event,),
             daemon=True
         )
 
-
         ws_thread.start()
+
 
     health_thread = threading.Thread(
         target=health_loop,
