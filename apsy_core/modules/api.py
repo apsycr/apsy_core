@@ -27,7 +27,8 @@ def start_api(config):
             "/openapi.json",
             "/health",
             "/ws/",
-            "/internal/"
+            "/internal/",
+            "/ping"
         ]
 
         if any(request.url.path.startswith(p) for p in public_paths):
@@ -171,6 +172,17 @@ def start_api(config):
         return {
             "ws": "online",
             "cloud": "connected"
+        }
+
+    @app.get("/ping")
+    async def ping():
+
+        return {
+            "ok": true,
+            "mirror": "CR-01",
+            "version": "1.0.0",
+            "empresa": "APSYCR",
+            "timezone": "-06:00"
         }
 
     logger.info(f'[API] ejecutando en {config["api"]["host"]}:{config["api"]["port"]}')

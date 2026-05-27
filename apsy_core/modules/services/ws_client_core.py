@@ -111,7 +111,7 @@ def handle_message(data: dict,shutdown_event,config):
     if msg_type == "handshake_ok":
         logger.info("✅ Handshake exitoso")
         set_setting("cloud_token", data["token"])
-        set_setting("ws_server_id", str(data["ws_id"]))
+        set_setting("ws_server_id", str(data["ws_server_id"]))
         set_setting("sucursal_id", str(data["sucursal_id"]))
 
     elif msg_type == "auth_ok":

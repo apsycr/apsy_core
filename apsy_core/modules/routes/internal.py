@@ -20,12 +20,28 @@ async def ws_identity(request: Request):
     if scope != API_SCOPE:
         raise HTTPException(status_code=401, detail="Invalid Scope")
 
-    payload = [
-        {
-            "idsucursal": 1,
-            "nombre": "Central"
-        }
-    ]
+    info_sucursales = ejecutar_api("""
+            SELECT 
+                id,
+                cedula,
+                nombre,
+                pfisico
+            from 
+                sucursales
+            where id >= 0;
+        """,(),'all')
+    
+    payload = []
+
+    for row in info_sucursales:
+
+        payload.append({
+            "idsucursal": row["id"],
+            "nombre": row["nombre"],
+            "cedula": row["cedula"],
+            "razon": row["pfisico"],
+            "access_token": "" #generar_access_token(row)
+        })
 
     return {
         "success": True,
