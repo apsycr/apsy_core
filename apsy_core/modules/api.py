@@ -176,9 +176,8 @@ def start_api(config):
 
     @app.get("/ping")
     async def ping():
-
         return {
-            "ok": true,
+            "ok": True,
             "mirror": "CR-01",
             "version": "1.0.0",
             "empresa": "APSYCR",
