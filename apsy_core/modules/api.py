@@ -87,7 +87,7 @@ def start_api(config):
 
                 token,
 
-            ), "one", "db_local")
+            ), "one", "")
 
             if not device:
 
