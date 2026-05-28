@@ -8,7 +8,7 @@ import secrets
 
 from modules.routes import auth, site, sync, proc, core, internal
 from modules.ws.router import router as ws_router
-from modules.db import ejecutar_api
+from modules.db import ejecutar_api, ejecutar
 
 logger = logging.getLogger("ws-server-local")
 
