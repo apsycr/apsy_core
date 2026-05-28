@@ -33,6 +33,38 @@ def guardar_en_ws_devices(device):
             device["terminal_id"]
         ])
 
+def get_mirrors(ws_server_id):
+
+    with get_db() as db:
+
+        db.execute("""
+
+            SELECT
+                idsucursal,
+                razon,
+                alias
+
+            FROM ws_sucursales
+
+            WHERE ws_server_id = ?
+            AND activo = 1
+
+        """, (ws_server_id,))
+
+        rows = db.fetchall()
+
+        return [
+
+            {
+                "idsucursal": r[0],
+                "razon": r[1],
+                "alias": r[2]
+            }
+
+            for r in rows
+
+        ]
+
 def sync_ws_mirrors(mirrors):
 
     with get_db() as db:

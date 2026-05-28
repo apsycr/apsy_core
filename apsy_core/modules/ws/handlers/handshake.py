@@ -1,6 +1,7 @@
 from modules.ws.services.validator import validar_identity
 from modules.ws.repositories.ws_server_repo import upsert_ws_server
 from modules.ws.repositories.ws_branch_repo import sync_sucursales
+from modules.services.ws_setting import get_mirrors
 
 async def handle_handshake(websocket, data):
 
@@ -29,35 +30,3 @@ async def handle_handshake(websocket, data):
         "token": ws_server["token"],
         "mirrors": mirrors
     })
-
-def get_mirrors(ws_server_id):
-
-    with get_db() as db:
-
-        db.execute("""
-
-            SELECT
-                idsucursal,
-                razon,
-                alias
-
-            FROM ws_sucursales
-
-            WHERE ws_server_id = ?
-            AND activo = 1
-
-        """, (ws_server_id,))
-
-        rows = db.fetchall()
-
-        return [
-
-            {
-                "idsucursal": r[0],
-                "razon": r[1],
-                "alias": r[2]
-            }
-
-            for r in rows
-
-        ]
