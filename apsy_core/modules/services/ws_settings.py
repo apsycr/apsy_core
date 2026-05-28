@@ -56,9 +56,9 @@ def get_mirrors(ws_server_id):
         return [
 
             {
-                "idsucursal": r[0],
-                "razon": r[1],
-                "alias": r[2]
+                "idsucursal": r['idsucursal'],
+                "razon": r['razon'],
+                "alias": r['alias']
             }
 
             for r in rows
