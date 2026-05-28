@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 
 router = APIRouter(
     prefix="/device",
@@ -6,285 +7,247 @@ router = APIRouter(
 )
 
 @router.post("/register")
-    async def register_device(
-        request: Request
-    ):
+async def register_device(
+    request: Request
+):
 
-        import secrets
+    import secrets
 
-        # ==========================================
-        # HEADERS
-        # ==========================================
+    # ==========================================
+    # HEADERS
+    # ==========================================
 
-        auth = request.headers.get("Authorization", "")
+    auth = request.headers.get("Authorization", "")
 
-        app = request.headers.get("X-App", "")
+    app = request.headers.get("X-App", "")
 
-        version = request.headers.get("X-Version", "")
+    version = request.headers.get("X-Version", "")
 
-        # ==========================================
-        # VALIDATE CLIENT
-        # ==========================================
+    # ==========================================
+    # VALIDATE CLIENT
+    # ==========================================
 
-        if auth != "Bearer APSY_PAIR_V1":
+    if auth != "Bearer APSY_PAIR_V1":
 
-            return JSONResponse(
-                status_code=401,
-                content={
-                    "ok": False,
-                    "msg": "Unauthorized"
-                }
-            )
-
-        if app == "":
-
-            return JSONResponse(
-                status_code=401,
-                content={
-                    "ok": False,
-                    "msg": "Invalid app"
-                }
-            )
-
-        # ==========================================
-        # BODY
-        # ==========================================
-
-        body = await request.json()
-
-        mirror = body.get(
-            "mirror",
-            ""
-        ).strip()
-
-        requires_pair = bool(
-            body.get(
-                "requires_pair",
-                False
-            )
+        return JSONResponse(
+            status_code=401,
+            content={
+                "ok": False,
+                "msg": "Unauthorized"
+            }
         )
 
-        device = body.get(
-            "device",
-            {}
+    if app == "":
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "ok": False,
+                "msg": "Invalid app"
+            }
         )
 
-        # ==========================================
-        # DEVICE DATA
-        # ==========================================
+    # ==========================================
+    # BODY
+    # ==========================================
 
-        device_id = device.get(
-            "device_id",
-            ""
-        ).strip()
+    body = await request.json()
 
-        nombre = device.get(
-            "nombre",
-            ""
-        ).strip()
+    mirror = body.get(
+        "mirror",
+        ""
+    ).strip()
 
-        hostname = device.get(
-            "hostname",
-            ""
-        ).strip()
+    requires_pair = bool(
+        body.get(
+            "requires_pair",
+            False
+        )
+    )
 
-        ip = device.get(
-            "ip",
-            ""
-        ).strip()
+    device = body.get(
+        "device",
+        {}
+    )
 
-        mac = device.get(
-            "mac",
-            ""
-        ).strip()
+    # ==========================================
+    # DEVICE DATA
+    # ==========================================
 
-        platform = device.get(
-            "platform",
-            ""
-        ).strip()
+    device_id = device.get(
+        "device_id",
+        ""
+    ).strip()
 
-        os_version = device.get(
-            "os_version",
-            ""
-        ).strip()
+    nombre = device.get(
+        "nombre",
+        ""
+    ).strip()
 
-        # ==========================================
-        # VALIDATE DEVICE
-        # ==========================================
+    hostname = device.get(
+        "hostname",
+        ""
+    ).strip()
 
-        if device_id == "":
+    ip = device.get(
+        "ip",
+        ""
+    ).strip()
+
+    mac = device.get(
+        "mac",
+        ""
+    ).strip()
+
+    platform = device.get(
+        "platform",
+        ""
+    ).strip()
+
+    os_version = device.get(
+        "os_version",
+        ""
+    ).strip()
+
+    # ==========================================
+    # VALIDATE DEVICE
+    # ==========================================
+
+    if device_id == "":
+
+        return {
+            "ok": False,
+            "msg": "device_id requerido"
+        }
+
+    # ==========================================
+    # MIRROR DATA
+    # ==========================================
+
+    sucursal_id = 0
+
+    mirror_alias = ""
+
+    row_mirror = None
+
+    if requires_pair:
+
+        if mirror == "":
 
             return {
                 "ok": False,
-                "msg": "device_id requerido"
+                "msg": "Mirror requerido"
             }
 
-        # ==========================================
-        # MIRROR DATA
-        # ==========================================
-
-        sucursal_id = 0
-
-        mirror_alias = ""
-
-        row_mirror = None
-
-        if requires_pair:
-
-            if mirror == "":
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror requerido"
-                }
-
-            row_mirror = ejecutar("""
-
-                SELECT
-                    id,
-                    ws_server_id,
-                    activo
-                FROM ws_sucursales
-                WHERE alias = %s
-                LIMIT 1
-
-            """, (mirror,), "one")
-
-            if not row_mirror:
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror no existe"
-                }
-
-            if row_mirror["activo"] != 1:
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror inactivo"
-                }
-
-            if not mirror_manager.exists(
-                row_mirror["ws_server_id"]
-            ):
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror offline"
-                }
-
-            sucursal_id = row_mirror["id"]
-
-            mirror_alias = mirror
-
-        # ==========================================
-        # TOKEN
-        # ==========================================
-
-        token = secrets.token_hex(32)
-
-        # ==========================================
-        # EXIST DEVICE
-        # ==========================================
-
-        row = ejecutar("""
+        row_mirror = ejecutar("""
 
             SELECT
                 id,
-                estado
-            FROM ws_devices
-            WHERE device_id = %s
+                ws_server_id,
+                activo
+            FROM ws_sucursales
+            WHERE alias = %s
             LIMIT 1
 
-        """, (device_id,), "one")
+        """, (mirror,), "one")
 
-        # ==========================================
-        # UPDATE DEVICE
-        # ==========================================
+        if not row_mirror:
 
-        if row:
+            return {
+                "ok": False,
+                "msg": "Mirror no existe"
+            }
 
-            ejecutar("""
+        if row_mirror["activo"] != 1:
 
-                UPDATE ws_devices SET
+            return {
+                "ok": False,
+                "msg": "Mirror inactivo"
+            }
 
-                    nombre = %s,
-                    hostname = %s,
-                    ip = %s,
-                    mac = %s,
-                    app = %s,
-                    version = %s,
-                    platform = %s,
-                    os_version = %s,
-                    token = %s,
-                    mirror = %s,
-                    sucursal_id = %s,
-                    last_seen = NOW()
+        if not mirror_manager.exists(
+            row_mirror["ws_server_id"]
+        ):
 
-                WHERE id = %s
+            return {
+                "ok": False,
+                "msg": "Mirror offline"
+            }
 
-            """, (
+        sucursal_id = row_mirror["id"]
 
-                nombre,
-                hostname,
-                ip,
-                mac,
-                app,
-                version,
-                platform,
-                os_version,
-                token,
-                mirror_alias,
-                sucursal_id,
-                row["id"]
+        mirror_alias = mirror
 
-            ),"none")
+    # ==========================================
+    # TOKEN
+    # ==========================================
 
-            ws_device_id = row["id"]
+    token = secrets.token_hex(32)
 
-        else:
+    # ==========================================
+    # EXIST DEVICE
+    # ==========================================
 
-            ejecutar("""
+    row = ejecutar("""
 
-                INSERT INTO ws_devices (
+        SELECT
+            id,
+            estado
+        FROM ws_devices
+        WHERE device_id = %s
+        LIMIT 1
 
-                    device_id,
-                    nombre,
-                    hostname,
-                    ip,
-                    mac,
-                    app,
-                    version,
-                    platform,
-                    os_version,
-                    token,
-                    estado,
-                    mirror,
-                    sucursal_id,
-                    created_at,
-                    last_seen
+    """, (device_id,), "one")
 
-                ) VALUES (
+    # ==========================================
+    # UPDATE DEVICE
+    # ==========================================
 
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    1,
-                    %s,
-                    %s,
-                    NOW(),
-                    NOW()
+    if row:
 
-                )
+        ejecutar("""
 
-            """, (
+            UPDATE ws_devices SET
+
+                nombre = %s,
+                hostname = %s,
+                ip = %s,
+                mac = %s,
+                app = %s,
+                version = %s,
+                platform = %s,
+                os_version = %s,
+                token = %s,
+                mirror = %s,
+                sucursal_id = %s,
+                last_seen = NOW()
+
+            WHERE id = %s
+
+        """, (
+
+            nombre,
+            hostname,
+            ip,
+            mac,
+            app,
+            version,
+            platform,
+            os_version,
+            token,
+            mirror_alias,
+            sucursal_id,
+            row["id"]
+
+        ),"none")
+
+        ws_device_id = row["id"]
+
+    else:
+
+        ejecutar("""
+
+            INSERT INTO ws_devices (
 
                 device_id,
                 nombre,
@@ -296,76 +259,114 @@ router = APIRouter(
                 platform,
                 os_version,
                 token,
-                mirror_alias,
-                sucursal_id
+                estado,
+                mirror,
+                sucursal_id,
+                created_at,
+                last_seen
 
-            ),"none")
+            ) VALUES (
 
-            ws_device_id = ejecutar(
-                "SELECT LAST_INSERT_ID() AS id",
-                (),
-                "one"
-            )["id"]
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                1,
+                %s,
+                %s,
+                NOW(),
+                NOW()
 
-        # ==========================================
-        # OPTIONAL MIRROR PAIR
-        # ==========================================
+            )
 
-        if requires_pair:
+        """, (
 
-            try:
+            device_id,
+            nombre,
+            hostname,
+            ip,
+            mac,
+            app,
+            version,
+            platform,
+            os_version,
+            token,
+            mirror_alias,
+            sucursal_id
 
-                response = await mirror_manager.proxy_request(
+        ),"none")
 
-                    row_mirror["ws_server_id"],
+        ws_device_id = ejecutar(
+            "SELECT LAST_INSERT_ID() AS id",
+            (),
+            "one"
+        )["id"]
 
-                    {
+    # ==========================================
+    # OPTIONAL MIRROR PAIR
+    # ==========================================
 
-                        "type": "action",
+    if requires_pair:
 
-                        "action": "pair_device",
+        try:
 
-                        "device": device
+            response = await mirror_manager.proxy_request(
 
-                    },
+                row_mirror["ws_server_id"],
 
-                    timeout=20
+                {
 
-                )
+                    "type": "action",
 
-                if not response.get("ok"):
+                    "action": "pair_device",
 
-                    return response
+                    "device": device
 
-            except Exception as e:
+                },
 
-                print(e)
+                timeout=20
 
-                return {
-                    "ok": False,
-                    "msg": "Error comunicando mirror"
-                }
+            )
 
-        # ==========================================
-        # SUCCESS
-        # ==========================================
+            if not response.get("ok"):
 
-        return {
+                return response
 
-            "ok": True,
+        except Exception as e:
 
-            "msg": "Device registrado",
+            print(e)
 
-            "device": {
-
-                "id": ws_device_id,
-
-                "device_id": device_id,
-
-                "token": token,
-
-                "estado": 1
-
+            return {
+                "ok": False,
+                "msg": "Error comunicando mirror"
             }
 
+    # ==========================================
+    # SUCCESS
+    # ==========================================
+
+    return {
+
+        "ok": True,
+
+        "msg": "Device registrado",
+
+        "device": {
+
+            "id": ws_device_id,
+
+            "device_id": device_id,
+
+            "token": token,
+
+            "estado": 1
+
         }
+
+    }
