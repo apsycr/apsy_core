@@ -1,7 +1,7 @@
 from modules.ws.services.validator import validar_identity
 from modules.ws.repositories.ws_server_repo import upsert_ws_server
 from modules.ws.repositories.ws_branch_repo import sync_sucursales
-from modules.services.ws_setting import get_mirrors
+from modules.services.ws_settings import get_mirrors
 
 async def handle_handshake(websocket, data):
 

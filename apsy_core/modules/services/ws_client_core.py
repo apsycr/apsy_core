@@ -112,7 +112,6 @@ def handle_message(data: dict,shutdown_event,config):
         logger.info("✅ Handshake exitoso")
         set_setting("cloud_token", data["token"])
         set_setting("ws_server_id", str(data["ws_server_id"]))
-        logger.info(data)
         sync_ws_mirrors(
             data["mirrors"]
         )
