@@ -39,7 +39,8 @@ def start_api(config):
             "/health",
             "/ws/",
             "/internal/",
-            "/ping"
+            "/ping",
+            "/pair-device"
         ]
 
         if any(request.url.path.startswith(p) for p in public_paths):

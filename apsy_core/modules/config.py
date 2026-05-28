@@ -13,7 +13,6 @@ logging.basicConfig(
 )
 
 def ensure_encrypted_config(env_cfg, env_path):
-    logging.info("servidor iniciado")
     changed = False
 
     for section in ["db", "db_api"]:
