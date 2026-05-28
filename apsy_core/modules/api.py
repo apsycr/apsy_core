@@ -21,6 +21,17 @@ def start_api(config):
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next):
 
+        mirror = request.headers.get("X-Mirror")
+
+        if mirror:
+
+            response = await mirror_manager.proxy_request(
+                mirror,
+                request
+            )
+
+            return JSONResponse(response)
+
         public_paths = [
             "/login",
             "/docs",
@@ -183,6 +194,139 @@ def start_api(config):
             "empresa": "APSYCR",
             "timezone": "-06:00"
         }
+
+    @app.post("/pair-device")
+    async def pair_device(
+        request: Request
+    ):
+
+        # ==========================================
+        # HEADERS
+        # ==========================================
+
+        auth = request.headers.get("Authorization", "")
+
+        app = request.headers.get("X-App", "")
+
+        version = request.headers.get("X-Version", "")
+
+        # ==========================================
+        # VALIDATE CLIENT
+        # ==========================================
+
+        if auth != "Bearer APSY_PAIR_V1":
+
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": False,
+                    "msg": "Unauthorized"
+                }
+            )
+
+        if app != "APSY-FE":
+
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": False,
+                    "msg": "Invalid app"
+                }
+            )
+
+        # ==========================================
+        # BODY
+        # ==========================================
+
+        body = await request.json()
+
+        mirror = body.get("mirror", "").strip()
+
+        device = body.get("device", {})
+
+        if mirror == "":
+
+            return {
+                "ok": False,
+                "msg": "Mirror requerido"
+            }
+
+        # ==========================================
+        # FIND MIRROR
+        # ==========================================
+
+        row = ejecutar_api("""
+
+            SELECT
+                ws_server_id,
+                activo
+            FROM ws_sucursales
+            WHERE alias = %s
+            LIMIT 1
+
+        """, (mirror,), 'one')
+
+        if not row:
+
+            return {
+                "ok": False,
+                "msg": "Mirror no existe"
+            }
+
+        if row["activo"] != 1:
+
+            return {
+                "ok": False,
+                "msg": "Mirror inactivo"
+            }
+
+        # ==========================================
+        # MIRROR ONLINE
+        # ==========================================
+
+        if not mirror_manager.exists(
+            row["ws_server_id"]
+        ):
+
+            return {
+                "ok": False,
+                "msg": "Mirror offline"
+            }
+
+        # ==========================================
+        # RPC
+        # ==========================================
+
+        try:
+
+            response = await mirror_manager.proxy_request(
+
+                row["ws_server_id"],
+
+                {
+
+                    "type": "action",
+
+                    "action": "pair_device",
+
+                    "device": device
+
+                },
+
+                timeout=20
+
+            )
+
+            return response
+
+        except Exception as e:
+
+            print(e)
+
+            return {
+                "ok": False,
+                "msg": "Error comunicando mirror"
+            }
 
     logger.info(f'[API] ejecutando en {config["api"]["host"]}:{config["api"]["port"]}')
 

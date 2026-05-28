@@ -482,7 +482,9 @@ def shell():
             "--default-character-set=utf8mb4",
 
             "-u", MYSQL_USER,
-            f"-p{MYSQL_PASSWORD}"
+            f"-p{MYSQL_PASSWORD}",
+            f"{MYSQL_DATABASE}"
+            "-A"
         ]
 
     # =================================

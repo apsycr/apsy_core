@@ -32,4 +32,94 @@ def guardar_en_ws_devices(device):
             device["sucursal_id"],
             device["terminal_id"]
         ])
-        
+
+def sync_ws_mirrors(mirrors):
+
+    with get_db() as db:
+
+        actuales = set()
+
+        db.execute("""
+            SELECT idsucursal
+            FROM ws_mirrors
+        """)
+
+        for r in db.fetchall():
+            actuales.add(r[0])
+
+        entrantes = {
+            m["idsucursal"]
+            for m in mirrors
+        }
+
+        # ======================================
+        # DESACTIVAR
+        # ======================================
+
+        for ids in actuales - entrantes:
+
+            db.execute("""
+
+                UPDATE ws_mirrors
+                SET activo = 0
+                WHERE idsucursal = ?
+
+            """, (ids,))
+
+        # ======================================
+        # UPSERT
+        # ======================================
+
+        for m in mirrors:
+
+            db.execute("""
+
+                SELECT idsucursal
+                FROM ws_mirrors
+                WHERE idsucursal = ?
+
+            """, (m["idsucursal"],))
+
+            row = db.fetchone()
+
+            if row:
+
+                db.execute("""
+
+                    UPDATE ws_mirrors SET
+
+                        razon = ?,
+                        alias = ?,
+                        activo = 1,
+                        updated_at = CURRENT_TIMESTAMP
+
+                    WHERE idsucursal = ?
+
+                """, (
+
+                    m["razon"],
+                    m["alias"],
+                    m["idsucursal"]
+
+                ))
+
+            else:
+
+                db.execute("""
+
+                    INSERT INTO ws_mirrors
+                    (
+                        idsucursal,
+                        razon,
+                        alias,
+                        activo
+                    )
+                    VALUES (?, ?, ?, 1)
+
+                """, (
+
+                    m["idsucursal"],
+                    m["razon"],
+                    m["alias"]
+
+                ))

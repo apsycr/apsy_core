@@ -7,7 +7,7 @@ import socket
 import uuid
 import requests
 
-from modules.services.ws_settings import get_setting, set_setting, guardar_en_ws_devices
+from modules.services.ws_settings import get_setting, set_setting, guardar_en_ws_devices, sync_ws_mirrors
 
 logger = logging.getLogger("ws-server-local")
 
@@ -112,7 +112,9 @@ def handle_message(data: dict,shutdown_event,config):
         logger.info("✅ Handshake exitoso")
         set_setting("cloud_token", data["token"])
         set_setting("ws_server_id", str(data["ws_server_id"]))
-        set_setting("sucursal_id", str(data["sucursal_id"]))
+        sync_ws_mirrors(
+            data["mirrors"]
+        )
 
     elif msg_type == "auth_ok":
         logger.info("🔓 Autenticación correcta")

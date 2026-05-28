@@ -18,9 +18,46 @@ async def handle_handshake(websocket, data):
         identity["payload"]
     )
 
+    mirrors = get_mirrors(
+        ws_server["id"]
+    )
+
     await websocket.send_json({
         "type":"handshake_ok",
         "success":1,
         "ws_server_id": ws_server["id"],
-        "token": ws_server["token"]
+        "token": ws_server["token"],
+        "mirrors": mirrors
     })
+
+def get_mirrors(ws_server_id):
+
+    with get_db() as db:
+
+        db.execute("""
+
+            SELECT
+                idsucursal,
+                razon,
+                alias
+
+            FROM ws_sucursales
+
+            WHERE ws_server_id = ?
+            AND activo = 1
+
+        """, (ws_server_id,))
+
+        rows = db.fetchall()
+
+        return [
+
+            {
+                "idsucursal": r[0],
+                "razon": r[1],
+                "alias": r[2]
+            }
+
+            for r in rows
+
+        ]

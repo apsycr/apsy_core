@@ -51,7 +51,9 @@ CREATE TABLE `ws_servers` (
   `token` varchar(128) DEFAULT NULL,
   `activo` tinyint(4) DEFAULT 1,
   `created_at` datetime DEFAULT current_timestamp(),
-  `last_seen` datetime DEFAULT NULL,
+  `last_seen` datetime DEFAULT NULL, 
+  `ws_uuid` VARCHAR(120),
+  `last_ping` DATETIME
   PRIMARY KEY (`id`),
   UNIQUE KEY `mac` (`mac`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -79,6 +81,7 @@ CREATE TABLE `ws_sucursales` (
   `razon` varchar(150) DEFAULT NULL,
   `access_token` text DEFAULT NULL,
   `activo` tinyint(4) DEFAULT 1,
+  `alias` varchar(100) DEFAULT ''
   PRIMARY KEY (`id`),
   KEY `ws_server_id` (`ws_server_id`),
   CONSTRAINT `ws_sucursales_ibfk_1` FOREIGN KEY (`ws_server_id`) REFERENCES `ws_servers` (`id`)
@@ -90,4 +93,3 @@ CREATE TABLE `ws_sucursales` (
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
