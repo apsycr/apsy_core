@@ -203,12 +203,16 @@ def start_api(config):
         request: Request
     ):
 
+        import secrets
+
         # ==========================================
         # HEADERS
         # ==========================================
 
         auth = request.headers.get("Authorization", "")
+
         app = request.headers.get("X-App", "")
+
         version = request.headers.get("X-Version", "")
 
         # ==========================================
@@ -241,28 +245,61 @@ def start_api(config):
 
         body = await request.json()
 
-        mirror = body.get("mirror", "").strip()
+        mirror = body.get(
+            "mirror",
+            ""
+        ).strip()
 
-        requires_pair = body.get(
-            "requires_pair",
-            False
+        requires_pair = bool(
+            body.get(
+                "requires_pair",
+                False
+            )
         )
 
-        device = body.get("device", {})
+        device = body.get(
+            "device",
+            {}
+        )
 
         # ==========================================
         # DEVICE DATA
         # ==========================================
 
-        device_id = device.get("device_id", "").strip()
+        device_id = device.get(
+            "device_id",
+            ""
+        ).strip()
 
-        nombre = device.get("nombre", "").strip()
+        nombre = device.get(
+            "nombre",
+            ""
+        ).strip()
 
-        ip = device.get("ip", "").strip()
+        hostname = device.get(
+            "hostname",
+            ""
+        ).strip()
 
-        mac = device.get("mac", "").strip()
+        ip = device.get(
+            "ip",
+            ""
+        ).strip()
 
-        platform = device.get("platform", "").strip()
+        mac = device.get(
+            "mac",
+            ""
+        ).strip()
+
+        platform = device.get(
+            "platform",
+            ""
+        ).strip()
+
+        os_version = device.get(
+            "os_version",
+            ""
+        ).strip()
 
         # ==========================================
         # VALIDATE DEVICE
@@ -274,6 +311,64 @@ def start_api(config):
                 "ok": False,
                 "msg": "device_id requerido"
             }
+
+        # ==========================================
+        # MIRROR DATA
+        # ==========================================
+
+        sucursal_id = 0
+
+        mirror_alias = ""
+
+        row_mirror = None
+
+        if requires_pair:
+
+            if mirror == "":
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror requerido"
+                }
+
+            row_mirror = ejecutar_api("""
+
+                SELECT
+                    id,
+                    ws_server_id,
+                    activo
+                FROM ws_sucursales
+                WHERE alias = %s
+                LIMIT 1
+
+            """, (mirror,), "one")
+
+            if not row_mirror:
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror no existe"
+                }
+
+            if row_mirror["activo"] != 1:
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror inactivo"
+                }
+
+            if not mirror_manager.exists(
+                row_mirror["ws_server_id"]
+            ):
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror offline"
+                }
+
+            sucursal_id = row_mirror["id"]
+
+            mirror_alias = mirror
 
         # ==========================================
         # TOKEN
@@ -307,12 +402,16 @@ def start_api(config):
                 UPDATE ws_devices SET
 
                     nombre = %s,
+                    hostname = %s,
                     ip = %s,
                     mac = %s,
                     app = %s,
                     version = %s,
                     platform = %s,
+                    os_version = %s,
                     token = %s,
+                    mirror = %s,
+                    sucursal_id = %s,
                     last_seen = NOW()
 
                 WHERE id = %s
@@ -320,12 +419,16 @@ def start_api(config):
             """, (
 
                 nombre,
+                hostname,
                 ip,
                 mac,
                 app,
                 version,
                 platform,
+                os_version,
                 token,
+                mirror_alias,
+                sucursal_id,
                 row["id"]
 
             ))
@@ -340,14 +443,19 @@ def start_api(config):
 
                     device_id,
                     nombre,
+                    hostname,
                     ip,
                     mac,
-                    estado,
-                    token,
-                    last_seen,
                     app,
                     version,
-                    platform
+                    platform,
+                    os_version,
+                    token,
+                    estado,
+                    mirror,
+                    sucursal_id,
+                    created_at,
+                    last_seen
 
                 ) VALUES (
 
@@ -355,12 +463,17 @@ def start_api(config):
                     %s,
                     %s,
                     %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
                     1,
                     %s,
+                    %s,
                     NOW(),
-                    %s,
-                    %s,
-                    %s
+                    NOW()
 
                 )
 
@@ -368,12 +481,16 @@ def start_api(config):
 
                 device_id,
                 nombre,
+                hostname,
                 ip,
                 mac,
-                token,
                 app,
                 version,
-                platform
+                platform,
+                os_version,
+                token,
+                mirror_alias,
+                sucursal_id
 
             ))
 
@@ -388,47 +505,6 @@ def start_api(config):
         # ==========================================
 
         if requires_pair:
-
-            if mirror == "":
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror requerido"
-                }
-
-            row_mirror = ejecutar_api("""
-
-                SELECT
-                    ws_server_id,
-                    activo
-                FROM ws_sucursales
-                WHERE alias = %s
-                LIMIT 1
-
-            """, (mirror,), "one")
-
-            if not row_mirror:
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror no existe"
-                }
-
-            if row_mirror["activo"] != 1:
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror inactivo"
-                }
-
-            if not mirror_manager.exists(
-                row_mirror["ws_server_id"]
-            ):
-
-                return {
-                    "ok": False,
-                    "msg": "Mirror offline"
-                }
 
             try:
 
