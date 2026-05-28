@@ -331,7 +331,7 @@ def start_api(config):
                     "msg": "Mirror requerido"
                 }
 
-            row_mirror = ejecutar_api("""
+            row_mirror = ejecutar("""
 
                 SELECT
                     id,
@@ -380,7 +380,7 @@ def start_api(config):
         # EXIST DEVICE
         # ==========================================
 
-        row = ejecutar_api("""
+        row = ejecutar("""
 
             SELECT
                 id,
@@ -397,7 +397,7 @@ def start_api(config):
 
         if row:
 
-            ejecutar_api("""
+            ejecutar("""
 
                 UPDATE ws_devices SET
 
@@ -437,7 +437,7 @@ def start_api(config):
 
         else:
 
-            ejecutar_api("""
+            ejecutar("""
 
                 INSERT INTO ws_devices (
 
@@ -494,7 +494,7 @@ def start_api(config):
 
             ))
 
-            ws_device_id = ejecutar_api(
+            ws_device_id = ejecutar(
                 "SELECT LAST_INSERT_ID() AS id",
                 (),
                 "one"
