@@ -431,7 +431,7 @@ def start_api(config):
                 sucursal_id,
                 row["id"]
 
-            ))
+            ),"none")
 
             ws_device_id = row["id"]
 
@@ -492,7 +492,7 @@ def start_api(config):
                 mirror_alias,
                 sucursal_id
 
-            ))
+            ),"none")
 
             ws_device_id = ejecutar(
                 "SELECT LAST_INSERT_ID() AS id",
