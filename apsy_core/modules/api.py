@@ -1,14 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from datetime import datetime
+
 import uvicorn
 import logging
+import secrets
 
 from modules.routes import auth, site, sync, proc, core, internal
 from modules.ws.router import router as ws_router
 from modules.db import ejecutar_api
 
 logger = logging.getLogger("ws-server-local")
-
 
 def start_api(config):
 
@@ -40,7 +42,7 @@ def start_api(config):
             "/ws/",
             "/internal/",
             "/ping",
-            "/pair-device"
+            "/register-device"
         ]
 
         if any(request.url.path.startswith(p) for p in public_paths):
@@ -196,8 +198,8 @@ def start_api(config):
             "timezone": "-06:00"
         }
 
-    @app.post("/pair-device")
-    async def pair_device(
+    @app.post("/register-device")
+    async def register_device(
         request: Request
     ):
 
@@ -206,9 +208,7 @@ def start_api(config):
         # ==========================================
 
         auth = request.headers.get("Authorization", "")
-
         app = request.headers.get("X-App", "")
-
         version = request.headers.get("X-Version", "")
 
         # ==========================================
@@ -225,7 +225,7 @@ def start_api(config):
                 }
             )
 
-        if app != "APSY-FE":
+        if app == "":
 
             return JSONResponse(
                 status_code=401,
@@ -243,91 +243,249 @@ def start_api(config):
 
         mirror = body.get("mirror", "").strip()
 
+        requires_pair = body.get(
+            "requires_pair",
+            False
+        )
+
         device = body.get("device", {})
 
-        if mirror == "":
+        # ==========================================
+        # DEVICE DATA
+        # ==========================================
+
+        device_id = device.get("device_id", "").strip()
+
+        nombre = device.get("nombre", "").strip()
+
+        ip = device.get("ip", "").strip()
+
+        mac = device.get("mac", "").strip()
+
+        platform = device.get("platform", "").strip()
+
+        # ==========================================
+        # VALIDATE DEVICE
+        # ==========================================
+
+        if device_id == "":
 
             return {
                 "ok": False,
-                "msg": "Mirror requerido"
+                "msg": "device_id requerido"
             }
 
         # ==========================================
-        # FIND MIRROR
+        # TOKEN
+        # ==========================================
+
+        token = secrets.token_hex(32)
+
+        # ==========================================
+        # EXIST DEVICE
         # ==========================================
 
         row = ejecutar_api("""
 
             SELECT
-                ws_server_id,
-                activo
-            FROM ws_sucursales
-            WHERE alias = %s
+                id,
+                estado
+            FROM ws_devices
+            WHERE device_id = %s
             LIMIT 1
 
-        """, (mirror,), 'one')
-
-        if not row:
-
-            return {
-                "ok": False,
-                "msg": "Mirror no existe"
-            }
-
-        if row["activo"] != 1:
-
-            return {
-                "ok": False,
-                "msg": "Mirror inactivo"
-            }
+        """, (device_id,), "one")
 
         # ==========================================
-        # MIRROR ONLINE
+        # UPDATE DEVICE
         # ==========================================
 
-        if not mirror_manager.exists(
-            row["ws_server_id"]
-        ):
+        if row:
 
-            return {
-                "ok": False,
-                "msg": "Mirror offline"
+            ejecutar_api("""
+
+                UPDATE ws_devices SET
+
+                    nombre = %s,
+                    ip = %s,
+                    mac = %s,
+                    app = %s,
+                    version = %s,
+                    platform = %s,
+                    token = %s,
+                    last_seen = NOW()
+
+                WHERE id = %s
+
+            """, (
+
+                nombre,
+                ip,
+                mac,
+                app,
+                version,
+                platform,
+                token,
+                row["id"]
+
+            ))
+
+            ws_device_id = row["id"]
+
+        else:
+
+            ejecutar_api("""
+
+                INSERT INTO ws_devices (
+
+                    device_id,
+                    nombre,
+                    ip,
+                    mac,
+                    estado,
+                    token,
+                    last_seen,
+                    app,
+                    version,
+                    platform
+
+                ) VALUES (
+
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    1,
+                    %s,
+                    NOW(),
+                    %s,
+                    %s,
+                    %s
+
+                )
+
+            """, (
+
+                device_id,
+                nombre,
+                ip,
+                mac,
+                token,
+                app,
+                version,
+                platform
+
+            ))
+
+            ws_device_id = ejecutar_api(
+                "SELECT LAST_INSERT_ID() AS id",
+                (),
+                "one"
+            )["id"]
+
+        # ==========================================
+        # OPTIONAL MIRROR PAIR
+        # ==========================================
+
+        if requires_pair:
+
+            if mirror == "":
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror requerido"
+                }
+
+            row_mirror = ejecutar_api("""
+
+                SELECT
+                    ws_server_id,
+                    activo
+                FROM ws_sucursales
+                WHERE alias = %s
+                LIMIT 1
+
+            """, (mirror,), "one")
+
+            if not row_mirror:
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror no existe"
+                }
+
+            if row_mirror["activo"] != 1:
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror inactivo"
+                }
+
+            if not mirror_manager.exists(
+                row_mirror["ws_server_id"]
+            ):
+
+                return {
+                    "ok": False,
+                    "msg": "Mirror offline"
+                }
+
+            try:
+
+                response = await mirror_manager.proxy_request(
+
+                    row_mirror["ws_server_id"],
+
+                    {
+
+                        "type": "action",
+
+                        "action": "pair_device",
+
+                        "device": device
+
+                    },
+
+                    timeout=20
+
+                )
+
+                if not response.get("ok"):
+
+                    return response
+
+            except Exception as e:
+
+                print(e)
+
+                return {
+                    "ok": False,
+                    "msg": "Error comunicando mirror"
+                }
+
+        # ==========================================
+        # SUCCESS
+        # ==========================================
+
+        return {
+
+            "ok": True,
+
+            "msg": "Device registrado",
+
+            "device": {
+
+                "id": ws_device_id,
+
+                "device_id": device_id,
+
+                "token": token,
+
+                "estado": 1
+
             }
 
-        # ==========================================
-        # RPC
-        # ==========================================
-
-        try:
-
-            response = await mirror_manager.proxy_request(
-
-                row["ws_server_id"],
-
-                {
-
-                    "type": "action",
-
-                    "action": "pair_device",
-
-                    "device": device
-
-                },
-
-                timeout=20
-
-            )
-
-            return response
-
-        except Exception as e:
-
-            print(e)
-
-            return {
-                "ok": False,
-                "msg": "Error comunicando mirror"
-            }
+        }
 
     logger.info(f'[API] ejecutando en {config["api"]["host"]}:{config["api"]["port"]}')
 
