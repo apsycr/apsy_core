@@ -367,7 +367,7 @@ async def register_device(
 
             "token": token,
 
-            "estado": 1
+            "estado": 'accepted'
 
         }
 
