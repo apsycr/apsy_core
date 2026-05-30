@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from modules.db import ejecutar
-from modules.services.device_token import validate_device_token
+from modules.services.devices_token import validate_device_token
 import secrets
 
 router = APIRouter(
