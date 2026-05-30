@@ -67,6 +67,8 @@ async def register_device(
             "msg": "Dispositivo no autorizado"
 
         }
+        
+    device = device['device']
 
     # ==========================================
     # DEVICE STATUS
