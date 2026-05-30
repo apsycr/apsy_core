@@ -45,7 +45,9 @@ def start_api(config):
             "/device/register"
         ]
 
-        if any(request.url.path.startswith(p) for p in public_paths):
+        path = request.url.path
+
+        if any(path.startswith(p) for p in public_paths):
             return await call_next(request)
 
         # =====================================
