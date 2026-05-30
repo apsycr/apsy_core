@@ -2,18 +2,207 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from modules.db import ejecutar
+from modules.services.device_token import validate_device_token
+import secrets
 
 router = APIRouter(
     prefix="/device",
     tags=["device"]
 )
 
+@router.post("/login")
+async def register_device(
+    request: Request
+):
+    body = await request.json()
+
+    user = body.get(
+        "user",
+        ""
+    ).strip()
+
+    password = body.get(
+        "password",
+        ""
+    ).strip()
+
+    # ==========================================
+    # VALIDATE INPUT
+    # ==========================================
+
+    if not user:
+
+        return {
+
+            "ok": False,
+
+            "msg": "Usuario requerido"
+
+        }
+
+     if not password:
+
+        return {
+
+            "ok": False,
+
+            "msg": "Contraseña requerida"
+
+        }
+
+    # ==========================================
+    # VALIDATE DEVICE TOKEN
+    # ==========================================
+
+    device = validate_device_token(
+        request
+    )
+
+    if not device:
+
+        return {
+
+            "ok": False,
+
+            "msg": "Dispositivo no autorizado"
+
+        }
+
+    # ==========================================
+    # DEVICE STATUS
+    # ==========================================
+
+    if device["estado"] != "accepted":
+
+        return {
+
+            "ok": False,
+
+            "msg": "Dispositivo pendiente autorización"
+
+        }
+
+    # ==========================================
+    # USER LOGIN
+    # ==========================================
+
+    rs = ejecutar(
+        """
+        SELECT
+
+            u.id,
+            u.user,
+            u.nombre,
+            u.idtipousuario,
+            s.id                        AS idsucursal,
+            s.nombre                    AS nombresucursal,
+            s.cedula                    AS cedulasucursal,
+            s.pfisoc                    AS nombrefantasia,
+            group_concat(t.telefono)    AS telefonosucursal,
+            group_conat(c.correo)       AS correosucursal,
+            s.idtiponegocio             AS tiposucursal
+
+        FROM usuarios u
+
+        INNER JOIN sucursales s
+            ON s.id = u.idsucursal
+
+        INNER JOIN correos c
+            ON c.idfila = s.id
+            and c.idtabla = 39
+
+        INNER JOIN telefonos t
+            ON t.idfila = s.id
+            and t.idtabla = 39
+
+        WHERE u.id > 0 and u.usuario = %s
+        and s.clave = md5(aes_encrypt(%s,'lt6969'))
+        """,
+        (user,password),
+        "one"
+    )
+
+    if not rs:
+
+        return {
+
+            "ok": False,
+
+            "msg": "Usuario o contraseña incorrectos"
+
+        }
+
+    # ==========================================
+    # SESSION TOKEN
+    # ==========================================
+
+    session_token = secrets.token_urlsafe(
+        48
+    )
+
+    db.execute(
+        """
+        UPDATE ws_devices
+           SET session_token=%s,
+               idusuario=%s,
+               last_login=NOW()
+         WHERE id=%s
+        """,
+        [
+            session_token,
+            rs["id"],
+            device["id"]
+        ]
+    )
+
+    # ==========================================
+    # SUCCESS
+    # ==========================================
+
+    return {
+
+        "ok": True,
+
+        "msg": "Login correcto",
+
+        "session_token": session_token,
+
+        "user": {
+
+            "idusuario": rs["id"],
+
+            "nombreusuario": rs["nombre"],
+
+            "tipousuario": rs["tipousuario"]
+
+        },
+
+        "company": {
+
+            "idsucursal": rs["idsucursal"],
+
+            "nombresucursal": rs["nombresucursal"],
+
+            "cedulasucursal": rs["cedulasucursal"],
+
+            "nombrefantasia": rs["nombrefantasia"],
+
+            "telefonosucursal": rs["telefonosucursal"],
+
+            "correosucursal": rs["correosucursal"],
+
+            "tiposucursal": rs["tiposucursal"]
+
+        }
+
+    }
+
+
+
 @router.post("/register")
 async def register_device(
     request: Request
 ):
-
-    import secrets
 
     # ==========================================
     # HEADERS
