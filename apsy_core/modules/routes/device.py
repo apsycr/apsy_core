@@ -40,7 +40,7 @@ async def register_device(
 
         }
 
-     if not password:
+    if not password:
 
         return {
 
