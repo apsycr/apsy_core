@@ -99,7 +99,7 @@ async def register_device(
             s.id                        AS idsucursal,
             s.nombre                    AS nombresucursal,
             s.cedula                    AS cedulasucursal,
-            s.pfisoc                    AS nombrefantasia,
+            s.pfisico                   AS nombrefantasia,
             group_concat(t.telefono)    AS telefonosucursal,
             group_conat(c.correo)       AS correosucursal,
             s.idtiponegocio             AS tiposucursal

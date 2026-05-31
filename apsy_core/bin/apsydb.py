@@ -310,7 +310,7 @@ def backup():
     else:
 
         cmd = [
-            "mariadb-dump",
+            "mysqldump",
 
             "--default-character-set=utf8mb4",
 
@@ -407,7 +407,7 @@ def restore(file):
         cmd = [
             "docker",
             "exec",
-            "-i",
+            "-it",
             CONTAINER,
 
             "mariadb",
@@ -416,7 +416,7 @@ def restore(file):
 
             "-u", MYSQL_USER,
             f"-p{MYSQL_PASSWORD}",
-
+            "-A",
             MYSQL_DATABASE
         ]
 
