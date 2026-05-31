@@ -45,7 +45,7 @@ def validate_device_token(
             a.id,
             a.device_id,
             a.token,
-            b.retorno,
+            b.retorno as estado,
 
             a.idusuario,
             a.session_token,
