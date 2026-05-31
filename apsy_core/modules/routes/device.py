@@ -95,7 +95,7 @@ async def register_device(
             u.id,
             u.user,
             u.nombre,
-            u.idtipousuario,
+            u.idtipousuario,            AS tipousuario
             s.id                        AS idsucursal,
             s.nombre                    AS nombresucursal,
             s.cedula                    AS cedulasucursal,
