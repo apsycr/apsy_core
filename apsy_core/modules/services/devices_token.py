@@ -42,18 +42,21 @@ def validate_device_token(
 
         SELECT
 
-            id,
-            device_id,
-            token,
-            estado,
+            a.id,
+            a.device_id,
+            a.token,
+            b.retorno,
 
-            idusuario,
-            session_token,
+            a.idusuario,
+            a.session_token,
 
-            created_at,
-            updated_at
+            a.created_at,
+            a.updated_at
 
-        FROM ws_devices
+        FROM ws_devices a
+
+        INNER JOIN ws_estados_devices b
+            on b.id = a.idestado
 
         WHERE token = %s
 
