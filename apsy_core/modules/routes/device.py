@@ -101,7 +101,7 @@ async def register_device(
             s.cedula                    AS cedulasucursal,
             s.pfisico                   AS nombrefantasia,
             group_concat(t.telefono)    AS telefonosucursal,
-            group_conat(c.correo)       AS correosucursal,
+            group_concat(c.correo)       AS correosucursal,
             s.idtiponegocio             AS tiposucursal
 
         FROM usuarios u
