@@ -56,7 +56,7 @@ def validate_device_token(
         FROM ws_devices a
 
         INNER JOIN ws_estados_devices b
-            on b.id = a.idestado
+            on b.id = a.estado
 
         WHERE token = %s
 
