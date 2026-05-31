@@ -142,7 +142,7 @@ async def register_device(
         48
     )
 
-    db.execute(
+    ejecutar(
         """
         UPDATE ws_devices
            SET session_token=%s,
@@ -150,11 +150,12 @@ async def register_device(
                last_login=NOW()
          WHERE id=%s
         """,
-        [
+        (
             session_token,
             rs["id"],
             device["id"]
-        ]
+        ),
+        'none'
     )
 
     # ==========================================
