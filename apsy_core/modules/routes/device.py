@@ -118,7 +118,7 @@ async def register_device(
             and t.idtabla = 39
 
         WHERE u.id > 0 and u.user = %s
-        and s.clave = md5(aes_encrypt(%s,'lt6969'))
+        and u.clave = md5(aes_encrypt(%s,'lt6969'))
         """,
         (user,password),
         "one"
