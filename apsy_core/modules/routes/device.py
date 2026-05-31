@@ -124,7 +124,7 @@ async def register_device(
         "one"
     )
 
-    if not rs:
+    if not rs or rs['id'] == None:
 
         return {
 
