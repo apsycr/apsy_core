@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-from modules.db import ejecutar
+from modules.db import ejecutar, ejecutar_api
 from modules.services.devices_token import validate_device_token
 import secrets
 
@@ -67,7 +67,7 @@ async def register_device(
             "msg": "Dispositivo no autorizado"
 
         }
-        
+
     device = device['device']
 
     # ==========================================
@@ -88,7 +88,7 @@ async def register_device(
     # USER LOGIN
     # ==========================================
 
-    rs = ejecutar(
+    rs = ejecutar_api(
         """
         SELECT
 
