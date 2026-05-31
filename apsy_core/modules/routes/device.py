@@ -101,7 +101,7 @@ async def register_device(
             s.cedula                    AS cedulasucursal,
             s.pfisico                   AS nombrefantasia,
             group_concat(t.telefono)    AS telefonosucursal,
-            group_concat(c.correo)       AS correosucursal,
+            group_concat(c.correo)      AS correosucursal,
             s.idtiponegocio             AS tiposucursal
 
         FROM usuarios u
@@ -117,7 +117,7 @@ async def register_device(
             ON t.idfila = s.id
             and t.idtabla = 39
 
-        WHERE u.id > 0 and u.usuario = %s
+        WHERE u.id > 0 and u.user = %s
         and s.clave = md5(aes_encrypt(%s,'lt6969'))
         """,
         (user,password),
