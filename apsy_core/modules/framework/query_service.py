@@ -8,7 +8,7 @@ from modules.db import ejecutar_api
 # 🔎 GET QUERY
 # =========================================
 
-def get_query(nombre):
+def get_query(nombre,request=None):
 
     row = ejecutar_api("""
 
@@ -26,7 +26,7 @@ def get_query(nombre):
 
         nombre,
 
-    ), "one",request)
+    ), "one", request)
 
     if not row:
 
@@ -357,7 +357,8 @@ def ejecutar_query(
 
         db,
         query_name,
-        input_params=None
+        input_params=None,
+        request=None
 
 ):
 
@@ -365,7 +366,7 @@ def ejecutar_query(
     # 🔎 QUERY
     # =========================
 
-    row = get_query(query_name)
+    row = get_query(query_name,request)
 
     sql_query = row.get("sql_query")
 
@@ -436,12 +437,14 @@ Recibidos:
     # 🚀 EXEC
     # =========================
 
-    return db(
+    return ejecutar_api(
 
         sql,
 
         tuple(input_params),
 
-        "all"
+        "all",
+
+        request
 
     )

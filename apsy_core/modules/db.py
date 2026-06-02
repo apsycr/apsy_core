@@ -75,15 +75,16 @@ def build_safe_context(request=None):
         return {}
 
     return {
-        '@@usr'         : request.state.user_id,
-        '@@idsucursal'  : request.state.sucursal_id,
-        '@@device'      : request.state.device_id,
-        '@@sucursal'    : request.state.sucursal_nombre,
-        '@@negocio'     : request.state.tipo_negocio,
-        '@@now'         : datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        '@@today'       : datetime.now().strftime('%Y-%m-%d'),
-        '@@year'        : datetime.now().year,
-        '@@month'       : datetime.now().month
+        '@@usr'             : request.state.user_id,
+        '@@idsucursal'      : request.state.sucursal_id,
+        '@@device'          : request.state.device_id,
+        '@@sucursal'        : request.state.sucursal_nombre,
+        '@@negocio'         : request.state.tipo_negocio,
+        '@@now'             : datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        '@@today'           : datetime.now().strftime('%Y-%m-%d'),
+        '@@year'            : datetime.now().year,
+        '@@month'           : datetime.now().month,
+        '@@config_server'   : _config['cloud']['api_url'].replace('/api','')
     }
 
 def inject_safe_context(sql, params=None, request=None):

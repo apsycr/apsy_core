@@ -156,7 +156,7 @@ def get_function(fn_path: str,request):
             return lambda db, p: ejecutar_sp(db, ref, p), None
 
         elif tipo == "query":
-            return lambda db, p: ejecutar_query(db, ref, p,request), None
+            return lambda db, p: ejecutar_query(db, ref, p, request), None
 
         elif tipo == "crud":
             return lambda db, p: ejecutar_crud(db, ref, p), None

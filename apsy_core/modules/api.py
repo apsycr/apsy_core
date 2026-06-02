@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from datetime import datetime
 
 import uvicorn
 import logging
@@ -146,6 +145,7 @@ def start_api(config):
         # =====================================
         if row["expires_at"] is not None:
             from datetime import datetime
+            
             if row["expires_at"] < datetime.now():
                 return JSONResponse(
                     status_code=401,
