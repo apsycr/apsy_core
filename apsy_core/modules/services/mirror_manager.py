@@ -1,7 +1,6 @@
 import asyncio
 import uuid
 
-
 class MirrorManager:
 
     def __init__(self):
