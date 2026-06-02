@@ -111,11 +111,8 @@ class MirrorManager:
 
     ):
 
-        if body is None:
-            body = {}
-
-        if headers is None:
-            headers = {}
+        body = dict(body or {})
+        headers = dict(headers or {})
 
         # ==========================================
         # EVITAR LOOP DE MIRROR
