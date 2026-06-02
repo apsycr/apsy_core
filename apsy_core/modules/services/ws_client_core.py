@@ -80,7 +80,7 @@ def _listen(ws, shutdown_event, config):
                 raise Exception("WS cerrado")
 
             data = json.loads(msg)
-            handle_message(data, shutdown_event, config)
+            handle_message(data, shutdown_event, config, ws)
 
         except websocket.WebSocketTimeoutException:
             # mantener viva la conexión
@@ -95,7 +95,7 @@ def _listen(ws, shutdown_event, config):
         except Exception as e:
             raise e
 
-def handle_message(data: dict,shutdown_event,config):
+def handle_message(data: dict,shutdown_event,config,ws):
     msg_type = data.get("type")
 
     if msg_type == 'register_device_ok':
@@ -129,9 +129,28 @@ def handle_message(data: dict,shutdown_event,config):
         shutdown_event.set()
         raise Exception("Error fatal desde cloud")
 
+    elif msg_type == "mirror_api":
+        logger.info("PROXY MIRROR")
+        response = local_api_proxy(data,config)
+        logger.info("PROXY OK")
+        
+        ws.send(
+        json.dumps({
+
+            "type": "action_response",
+
+            "request_id":
+                data["request_id"],
+
+            **response
+
+        })
+    )
+
     else:
-        shutdown_event.set()
-        logger.warning(f"⚠️ Mensaje desconocido: {data}")
+        logger.warning(
+            f"⚠️ Mensaje desconocido: {data}"
+        )
 
 
 def access_local(config, endpoint, payload=None):
@@ -232,3 +251,85 @@ def guardar_device(data, config):
     guardar_en_ws_devices(device)
 
     return device
+
+import requests
+
+def local_api_proxy(data,config):
+
+    endpoint = data.get(
+        "endpoint",
+        ""
+    )
+
+    method = data.get(
+        "method",
+        "POST"
+    ).upper()
+
+    headers = data.get(
+        "headers",
+        {}
+    )
+
+    body = data.get(
+        "body",
+        {}
+    )
+
+    url = f"{config['production_api']['base_url']}{endpoint}"
+
+    try:
+
+        if method == "POST":
+
+            r = requests.post(
+                url,
+                json=body,
+                headers=headers,
+                timeout=15
+            )
+
+        elif method == "GET":
+
+            r = requests.get(
+                url,
+                params=body,
+                headers=headers,
+                timeout=15
+            )
+
+        else:
+
+            return {
+
+                "ok": False,
+
+                "msg": f"Método no soportado: {method}"
+
+            }
+
+        try:
+
+            return r.json()
+
+        except Exception:
+
+            return {
+
+                "ok": r.ok,
+
+                "status_code": r.status_code,
+
+                "text": r.text
+
+            }
+
+    except Exception as e:
+
+        return {
+
+            "ok": False,
+
+            "msg": str(e)
+
+        }

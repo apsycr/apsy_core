@@ -18,8 +18,16 @@ async def websocket_entry(websocket: WebSocket):
 
             msg_type = data.get("type")
 
-            if msg_type not in ("handshake", "auth"):
+            if msg_type == "action_response":
 
+                await mirror_manager.handle_message(
+                    data
+                )
+
+            elif msg_type in ("handshake", "auth"):
+
+                await ws_connect(websocket, data)
+            else:
                 await websocket.send_json({
                     "success": 0,
                     "message": "Primer mensaje inválido"
@@ -27,8 +35,6 @@ async def websocket_entry(websocket: WebSocket):
 
                 await websocket.close(code=1008)
                 return
-
-            await ws_connect(websocket, data)
 
     except WebSocketDisconnect:
 
