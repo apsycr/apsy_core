@@ -511,19 +511,15 @@ async def register_device(
 
         try:
 
-            response = await mirror_manager.proxy_request(
+            response = await mirror_manager.send_api(
 
                 row_mirror["ws_server_id"],
 
-                {
+                endpoint="/device/register",
 
-                    "type": "action",
+                body=body,
 
-                    "action": "pair_device",
-
-                    "device": device
-
-                },
+                headers=request.headers,
 
                 timeout=20
 

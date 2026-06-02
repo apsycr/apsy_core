@@ -60,38 +60,99 @@ class MirrorManager:
     # HANDLE MESSAGE
     # =====================================================
 
-    async def handle_message(self, data):
+    async def handle_message(
+        self,
+        data
+    ):
 
-        tipo = data.get("type")
+        msg_type = data.get(
+            "type"
+        )
 
-        # ==========================================
-        # RPC RESPONSE
-        # ==========================================
+        if msg_type != "action_response":
+            return
 
-        if tipo == "action_response":
+        request_id = data.get(
+            "request_id"
+        )
 
-            request_id = data.get(
-                "request_id"
+        if not request_id:
+            return
+
+        future = self.pending.get(
+            request_id
+        )
+
+        if future and not future.done():
+
+            future.set_result(
+                data
             )
 
-            if not request_id:
-                return
-
-            future = self.pending.get(
-                request_id
-            )
-
-            if future and not future.done():
-
-                future.set_result(
-                    data
-                )
-
     # =====================================================
-    # SEND ACTION
+    # SEND API LOCAL
     # =====================================================
 
-    async def send_action(
+    async def send_api(
+
+        self,
+
+        ws_server_id,
+
+        endpoint,
+
+        body=None,
+
+        headers=None,
+
+        method="POST",
+
+        timeout=15
+
+    ):
+
+        if body is None:
+            body = {}
+
+        if headers is None:
+            headers = {}
+
+        # ==========================================
+        # EVITAR LOOP DE MIRROR
+        # ==========================================
+
+        body = body.copy()
+
+        body.pop(
+            "mirror",
+            None
+        )
+
+        body["requires_pair"] = False
+
+        return await self._send_request(
+
+            ws_server_id,
+
+            {
+
+                "type": "mirror_api",
+
+                "endpoint": endpoint,
+
+                "method": method,
+
+                "headers": headers,
+
+                "body": body
+
+            },
+
+            timeout
+
+        )
+
+    async def send_rpc(
 
         self,
 
@@ -107,6 +168,35 @@ class MirrorManager:
 
         if payload is None:
             payload = {}
+
+        return await self._send_request(
+
+            ws_server_id,
+
+            {
+
+                "type": "rpc",
+
+                "action": action,
+
+                "payload": payload
+
+            },
+
+            timeout
+
+        )
+    async def _send_request(
+
+        self,
+
+        ws_server_id,
+
+        message,
+
+        timeout=15
+
+    ):
 
         # ==========================================
         # MIRROR ONLINE
@@ -130,21 +220,9 @@ class MirrorManager:
             uuid.uuid4()
         )
 
-        # ==========================================
-        # MESSAGE
-        # ==========================================
-
-        message = {
-
-            "type": "action",
-
-            "action": action,
-
-            "request_id": request_id,
-
-            "payload": payload
-
-        }
+        message[
+            "request_id"
+        ] = request_id
 
         # ==========================================
         # FUTURE
@@ -158,17 +236,9 @@ class MirrorManager:
 
         try:
 
-            # ======================================
-            # SEND WS
-            # ======================================
-
             await websocket.send_json(
                 message
             )
-
-            # ======================================
-            # WAIT RESPONSE
-            # ======================================
 
             response = await asyncio.wait_for(
 
@@ -182,15 +252,10 @@ class MirrorManager:
 
         finally:
 
-            # ======================================
-            # CLEANUP
-            # ======================================
-
-            if request_id in self.pending:
-
-                del self.pending[
-                    request_id
-                ]
+            self.pending.pop(
+                request_id,
+                None
+            )
 
 
 mirror_manager = MirrorManager()
