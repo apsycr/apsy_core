@@ -19,6 +19,55 @@ class MirrorManager:
 
         self.pending = {}
 
+    def validar_mirror(mirror):
+
+        if mirror == "":
+
+            return {
+                "ok": False,
+                "msg": "Mirror requerido"
+            }
+
+        row_mirror = ejecutar("""
+
+            SELECT
+                id,
+                ws_server_id,
+                activo
+            FROM ws_sucursales
+            WHERE alias = %s
+            LIMIT 1
+
+        """, (mirror,), "one")
+
+        if not row_mirror:
+
+            return {
+                "ok": False,
+                "msg": "Mirror no existe"
+            }
+
+        if row_mirror["activo"] != 1:
+
+            return {
+                "ok": False,
+                "msg": "Mirror inactivo"
+            }
+
+        if not mirror_manager.exists(
+            row_mirror["ws_server_id"]
+        ):
+
+            return {
+                "ok": False,
+                "msg": "Mirror offline"
+            }
+
+        return {
+                "ok": True,
+                "ws_server_id": row_mirror["ws_server_id"]
+            }
+
     # =====================================================
     # REGISTER
     # =====================================================
@@ -118,14 +167,10 @@ class MirrorManager:
         # EVITAR LOOP DE MIRROR
         # ==========================================
 
-        body = body.copy()
-
-        body.pop(
-            "mirror",
+        headers.pop(
+            "X-Mirror",
             None
         )
-
-        body["requires_pair"] = False
 
         return await self._send_request(
 

@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 from modules.db import ejecutar, ejecutar_api
 from modules.services.devices_token import validate_device_token
-from modules.services.mirror_manager import mirror_manager
+
 import secrets
 
 router = APIRouter(
@@ -202,7 +202,6 @@ async def register_device(
     }
 
 
-
 @router.post("/register")
 async def register_device(
     request: Request
@@ -252,13 +251,6 @@ async def register_device(
         "mirror",
         ""
     ).strip()
-
-    requires_pair = bool(
-        body.get(
-            "requires_pair",
-            False
-        )
-    )
 
     device = body.get(
         "device",
@@ -322,56 +314,6 @@ async def register_device(
     sucursal_id = 0
 
     mirror_alias = ""
-
-    row_mirror = None
-
-    if requires_pair:
-
-        if mirror == "":
-
-            return {
-                "ok": False,
-                "msg": "Mirror requerido"
-            }
-
-        row_mirror = ejecutar("""
-
-            SELECT
-                id,
-                ws_server_id,
-                activo
-            FROM ws_sucursales
-            WHERE alias = %s
-            LIMIT 1
-
-        """, (mirror,), "one")
-
-        if not row_mirror:
-
-            return {
-                "ok": False,
-                "msg": "Mirror no existe"
-            }
-
-        if row_mirror["activo"] != 1:
-
-            return {
-                "ok": False,
-                "msg": "Mirror inactivo"
-            }
-
-        if not mirror_manager.exists(
-            row_mirror["ws_server_id"]
-        ):
-
-            return {
-                "ok": False,
-                "msg": "Mirror offline"
-            }
-
-        sucursal_id = row_mirror["id"]
-
-        mirror_alias = mirror
 
     # ==========================================
     # TOKEN
@@ -503,40 +445,6 @@ async def register_device(
             "one"
         )["id"]
 
-    # ==========================================
-    # OPTIONAL MIRROR PAIR
-    # ==========================================
-
-    if requires_pair:
-
-        try:
-
-            response = await mirror_manager.send_api(
-
-                row_mirror["ws_server_id"],
-
-                endpoint="/device/register",
-
-                body=body,
-
-                headers=request.headers,
-
-                timeout=20
-
-            )
-
-            if not response.get("ok"):
-
-                return response
-
-        except Exception as e:
-
-            print(e)
-
-            return {
-                "ok": False,
-                "msg": "Error comunicando mirror"
-            }
 
     # ==========================================
     # SUCCESS

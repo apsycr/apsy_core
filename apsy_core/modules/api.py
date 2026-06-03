@@ -24,14 +24,50 @@ def start_api(config):
 
         mirror = request.headers.get("X-Mirror")
 
+        path = request.url.path
+
         if mirror:
+            from modules.services.mirror_manager import mirror_manager
 
-            response = await mirror_manager.proxy_request(
-                mirror,
-                request
-            )
+            mirror = mirror_manager.validar_mirror(mirror)
 
-            return JSONResponse(response)
+            if mirror['ok']:
+
+                try:
+
+                    return await mirror_manager.send_api(
+
+                        mirror["ws_server_id"],
+
+                        endpoint=path,
+
+                        body=await request.json(),
+
+                        headers=request.headers,
+
+                        timeout=20
+
+                    )
+
+                except Exception as e:
+
+                    print(e)
+
+                    return JSONResponse(
+                        status_code=401,
+                        content={
+                            "ok": False,
+                            "msg": "Error comunicando mirror"
+                        }
+                    )
+            else:
+                return JSONResponse(
+                    status_code=401,
+                    content={
+                        "ok": False,
+                        "msg": mirror.msg
+                    }
+                )
 
         public_paths = [
             "/login",
@@ -43,8 +79,6 @@ def start_api(config):
             "/ping",
             "/device/register"
         ]
-
-        path = request.url.path
 
         if any(path.startswith(p) for p in public_paths):
             return await call_next(request)
