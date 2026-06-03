@@ -19,7 +19,7 @@ class MirrorManager:
 
         self.pending = {}
 
-    def validar_mirror(mirror):
+    def validar_mirror(self,mirror):
 
         if mirror == "":
 
