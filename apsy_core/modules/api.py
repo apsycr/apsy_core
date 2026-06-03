@@ -70,7 +70,7 @@ def start_api(config):
                     status_code=401,
                     content={
                         "ok": False,
-                        "msg": mirror.msg
+                        "msg": mirror['msg']
                     }
                 )
 

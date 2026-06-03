@@ -169,7 +169,7 @@ class MirrorManager:
         # ==========================================
 
         headers.pop(
-            "X-Mirror",
+            "x-mirror",
             None
         )
 
