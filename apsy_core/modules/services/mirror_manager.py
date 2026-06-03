@@ -173,6 +173,8 @@ class MirrorManager:
             None
         )
 
+        headers["x-from-mirror"] = "1"
+
         return await self._send_request(
 
             ws_server_id,
