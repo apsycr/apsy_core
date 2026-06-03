@@ -35,7 +35,7 @@ def start_api(config):
 
                 try:
 
-                    return await mirror_manager.send_api(
+                    response = await mirror_manager.send_api(
 
                         mirror["ws_server_id"],
 
@@ -47,6 +47,11 @@ def start_api(config):
 
                         timeout=20
 
+                    )
+
+                    return JSONResponse(
+                        status_code=200,
+                        content=response
                     )
 
                 except Exception as e:
