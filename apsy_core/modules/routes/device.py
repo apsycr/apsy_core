@@ -81,7 +81,9 @@ async def register_device(
 
             "ok": False,
 
-            "msg": "Dispositivo pendiente autorización"
+            "msg": "Dispositivo pendiente de autorización",
+
+            "color": "orange"
 
         }
 
@@ -217,6 +219,9 @@ async def register_device(
 
     version = request.headers.get("X-Version", "")
 
+    from_mirror = request.headers.get(
+        "x-from-mirror", 0)
+
     # ==========================================
     # VALIDATE CLIENT
     # ==========================================
@@ -246,11 +251,6 @@ async def register_device(
     # ==========================================
 
     body = await request.json()
-
-    mirror = body.get(
-        "mirror",
-        ""
-    ).strip()
 
     device = body.get(
         "device",
@@ -308,14 +308,6 @@ async def register_device(
         }
 
     # ==========================================
-    # MIRROR DATA
-    # ==========================================
-
-    sucursal_id = 0
-
-    mirror_alias = ""
-
-    # ==========================================
     # TOKEN
     # ==========================================
 
@@ -355,8 +347,6 @@ async def register_device(
                 platform = %s,
                 os_version = %s,
                 token = %s,
-                mirror = %s,
-                sucursal_id = %s,
                 last_seen = NOW()
 
             WHERE id = %s
@@ -372,9 +362,7 @@ async def register_device(
             platform,
             os_version,
             token,
-            mirror_alias,
-            sucursal_id,
-            row["id"]
+            row["id"],
 
         ),"none")
 
@@ -397,8 +385,6 @@ async def register_device(
                 os_version,
                 token,
                 estado,
-                mirror,
-                sucursal_id,
                 created_at,
                 last_seen
 
@@ -413,8 +399,6 @@ async def register_device(
                 %s,
                 %s,
                 %s,
-                %s,
-                1,
                 %s,
                 %s,
                 NOW(),
@@ -434,8 +418,7 @@ async def register_device(
             platform,
             os_version,
             token,
-            mirror_alias,
-            sucursal_id
+            2 if from_mirror else 1
 
         ),"none")
 
@@ -464,7 +447,7 @@ async def register_device(
 
             "token": token,
 
-            "estado": 'accepted'
+            "estado": 'pending' if from_mirror else 'accepted'
 
         }
 

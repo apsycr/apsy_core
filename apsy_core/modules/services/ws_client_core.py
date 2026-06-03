@@ -130,9 +130,7 @@ def handle_message(data: dict,shutdown_event,config,ws):
         raise Exception("Error fatal desde cloud")
 
     elif msg_type == "mirror_api":
-        logger.info(f"PROXY MIRROR: {data}")
         response = local_api_proxy(data,config)
-        logger.info("PROXY OK")
 
         ws.send(
         json.dumps({
