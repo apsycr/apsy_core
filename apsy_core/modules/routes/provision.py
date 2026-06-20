@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-from services.provisions import (
+from modules.services.provisions import (
     validate_init_token,
     get_ws_settings,
     register_terminal,
