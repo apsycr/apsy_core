@@ -14,8 +14,6 @@ from modules.scheduler import start as start_scheduler, add_cron
 from modules.startup import on_startup
 from modules.services.irobot import leer_correos
 
-#from modules.ws_server import start_ws_server
-
 from modules.db import init_pools
 
 #BASE_DIR = Path(sys.executable if getattr(sys, 'frozen', False) else __file__).parent

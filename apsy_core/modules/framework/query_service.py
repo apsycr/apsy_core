@@ -404,10 +404,15 @@ def ejecutar_query(
     # 🔐 PARAMS
     # =========================
 
-    expected_params = count_sql_params(sql)
-
     if input_params is None:
         input_params = []
+
+    sql, input_params = apply_special_params(
+        sql,
+        input_params
+    )
+
+    expected_params = count_sql_params(sql)
 
     if isinstance(input_params, dict):
 
@@ -448,3 +453,30 @@ Recibidos:
         request
 
     )
+
+def apply_special_params(sql, params):
+
+    if not isinstance(params, dict):
+        return sql, params
+
+    # =========================
+    # @@search
+    # =========================
+
+    if '@@search' in sql:
+
+        search = (
+            params.get('search', '')
+            .strip()
+        )
+
+        sql = sql.replace(
+            '@@search',
+            '?'
+        )
+
+        params['search'] = (
+            f'%{search}%'
+        )
+
+    return sql, params

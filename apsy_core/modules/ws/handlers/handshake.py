@@ -1,6 +1,7 @@
 from modules.ws.services.validator import validar_identity
 from modules.ws.repositories.ws_server_repo import upsert_ws_server
 from modules.ws.repositories.ws_branch_repo import sync_sucursales
+from modules.ws.handlers.handshake_app import handle_app_handshake
 from modules.services.ws_settings import get_mirrors
 
 async def handle_handshake(websocket, data):
@@ -9,6 +10,15 @@ async def handle_handshake(websocket, data):
 
     if not identity:
         raise Exception("Handshake sin payload")
+
+    tipo = identity.get("tipo",'')
+    
+    if tipo == "app":
+        await handle_app_handshake(
+            websocket,
+            identity
+        )
+        return
 
     validar_identity(identity)
 

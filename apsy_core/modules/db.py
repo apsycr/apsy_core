@@ -84,7 +84,7 @@ def build_safe_context(request=None):
         '@@today'           : datetime.now().strftime('%Y-%m-%d'),
         '@@year'            : datetime.now().year,
         '@@month'           : datetime.now().month,
-        '@@config_server'   : _config['cloud']['api_url'].replace('/api','')
+        '@@config_server'   : _config['cloud']['api_url'].replace('/api',''),
     }
 
 def inject_safe_context(sql, params=None, request=None):
@@ -205,6 +205,7 @@ def ejecutar(sql, params=None, fetch="one",db="db"):
         - "one"  → un registro
         - "all"  → lista
         - "none" → solo ejecutar (INSERT/UPDATE)
+        - "multi" -> leer varios dataset
     """
 
     conn = None
@@ -223,12 +224,25 @@ def ejecutar(sql, params=None, fetch="one",db="db"):
             result = cur.fetchone()
         elif fetch == "all":
             result = cur.fetchall()
+        elif fetch == "multi":
+
+            result = []
+
+            while True:
+
+                result.append(
+                    cur.fetchall()
+                )
+
+                if not cur.nextset():
+                    break
         else:
             result = cur.rowcount
         
-        # 🔥 LIMPIAR RESULTSETS SIEMPRE
-        while cur.nextset():
-            pass
+        if fetch != "multi":
+
+            while cur.nextset():
+                pass
 
         conn.commit()
         return result

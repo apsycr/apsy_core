@@ -7,7 +7,7 @@ import socket
 import uuid
 import requests
 
-from modules.services.ws_settings import get_setting, set_setting, guardar_en_ws_devices, sync_ws_mirrors
+from modules.services.ws_settings import get_setting, set_setting, sync_ws_mirrors
 
 logger = logging.getLogger("ws-server-local")
 
@@ -98,7 +98,7 @@ def _listen(ws, shutdown_event, config):
 def handle_message(data: dict,shutdown_event,config,ws):
     msg_type = data.get("type")
 
-    if msg_type == 'register_device_ok':
+    #if msg_type == 'register_device_ok':
         #JSON ESPERADO
         #{
         #   "type": "register_device",
@@ -106,7 +106,7 @@ def handle_message(data: dict,shutdown_event,config,ws):
         #   "tipo": "caja",
         #   "nombre": "Caja 1"
         # }
-        guardar_device(data,config)
+        #guardar_device(data,config)
 
     if msg_type == "handshake_ok":
         logger.info("✅ Handshake exitoso")
@@ -214,43 +214,41 @@ def get_identity(config,shutdown_event) -> dict:
 
     return identity
 
-def guardar_device(data, config):
-    import socket
+# def guardar_device(data, config):
+#     import socket
 
-    # construir payload limpio
-    payload = {
-        "device_id": data.get("device_id"),
-        "tipo": data.get("tipo"),
-        "nombre": data.get("nombre"),
-        "ip": data.get("ip") or socket.gethostbyname(socket.gethostname()),
-        "mac": data.get("mac"),
-        "hostname": data.get("hostname"),
-        "os": data.get("os"),
-        "version": data.get("version"),
-        "app": data.get("app"),
-        "sucursal_id": data.get("sucursal_id")
-    }
+#     # construir payload limpio
+#     payload = {
+#         "device_id": data.get("device_id"),
+#         "tipo": data.get("tipo"),
+#         "nombre": data.get("nombre"),
+#         "ip": data.get("ip") or socket.gethostbyname(socket.gethostname()),
+#         "mac": data.get("mac"),
+#         "hostname": data.get("hostname"),
+#         "os": data.get("os"),
+#         "version": data.get("version"),
+#         "app": data.get("app"),
+#         "sucursal_id": data.get("sucursal_id")
+#     }
 
-    # enviar al servidor (cmd 14 = registrar device)
-    try:
-        res = access_local(config,"internal/ws/register-device", payload)
-    except Exception as e:
-        logger.error(f"❌ Error registrando device: {e}")
-        return None
+#     # enviar al servidor (cmd 14 = registrar device)
+#     try:
+#         res = access_local(config,"internal/ws/register-device", payload)
+#     except Exception as e:
+#         logger.error(f"❌ Error registrando device: {e}")
+#         return None
 
-    # validar respuesta
-    if not res.get("success"):
-        logger.error(f"Servidor rechazó dispositivo: {res.get("message")}")
-        return None
+#     # validar respuesta
+#     if not res.get("success"):
+#         logger.error(f"Servidor rechazó dispositivo: {res.get("message")}")
+#         return None
 
-    # guardar en ws_devices (LOCAL)
-    device = res.get("data", {})
+#     # guardar en ws_devices (LOCAL)
+#     device = res.get("data", {})
 
-    guardar_en_ws_devices(device)
+#     guardar_en_ws_devices(device)
 
-    return device
-
-import requests
+#     return device
 
 def local_api_proxy(data,config):
 

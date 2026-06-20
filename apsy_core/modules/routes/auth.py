@@ -212,7 +212,7 @@ def login(data: dict, response: Response, request: Request):
     refresh = generar_token()
 
     expires = datetime.now() + timedelta(minutes=60)
-    refresh_expires = datetime.now() + timedelta(days=1)
+    refresh_expires = datetime.now() + timedelta(days=30)
 
     # =========================
     # 🧠 CONTROL SESIONES (max 3)
@@ -271,8 +271,16 @@ def login(data: dict, response: Response, request: Request):
     response.set_cookie(
         key="apsy_token",
         value=token,
-        httponly=is_https,
-        secure=True,
+        httponly=True,
+        secure=is_https,
+        samesite="Lax"
+    )
+
+    response.set_cookie(
+        key="apsy_refresh",
+        value=refresh,
+        httponly=True,
+        secure=is_https,
         samesite="Lax"
     )
 

@@ -49,6 +49,7 @@ services:
 
     environment:
       TZ: America/Costa_Rica
+      APSY_ENV: dev
 
     ports:
       - "9000:9000"
@@ -60,7 +61,8 @@ services:
       - ${APSY_DATA}/uploads:/uploads
 
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
 
   nginx:
 
@@ -75,7 +77,8 @@ services:
       - "443:443"
 
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      #- ./nginx/conf.d:/etc/nginx/conf.d
+      - ${APSY_DATA}/config/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
 
       - ${APSY_DATA}/apsy_fe:/var/www/apsy_fe
 

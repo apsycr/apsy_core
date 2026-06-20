@@ -38,17 +38,36 @@ async def handle_auth(websocket, data):
 
 def validar_token(token):
 
-    return ejecutar("""
-
+    server = ejecutar("""
         SELECT
             id,
             token,
             activo
         FROM ws_servers
-        WHERE token = %s
+        WHERE token=%s
         LIMIT 1
-
     """, (token,), "one")
+
+    if server:
+        server["tipo"] = "ws_server"
+        return server
+
+    device = ejecutar("""
+        SELECT
+            id,
+            token,
+            estado AS activo,
+            app
+        FROM ws_devices
+        WHERE token=%s
+        LIMIT 1
+    """, (token,), "one")
+
+    if device:
+        device["tipo"] = "app"
+        return device
+
+    return None
 
 def obtener_mirrors(ws_server_id):
 

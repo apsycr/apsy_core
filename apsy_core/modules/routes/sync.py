@@ -1,22 +1,59 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 
-router = APIRouter()
+from modules.services.sync.tools import check_token, sync_init, compile_pull_manifest
 
-@router.post("/sync")
-def login(data: dict):
-    user = data.get("user")
-    password = data.get("pass")
+router = APIRouter(
+    prefix="/sync",
+    tags=["sync"]
+)
 
-    # 🔴 aquí luego conectas MariaDB
-    if user == "admin" and password == "123":
-        return {
-            "token": "fake-jwt-token",
-            "tipo": "cms"
-        }
+@router.post("/bootstrap")
+def login(request: Request):
+    #VALIDAR TOKEN
+    token = request.headers.get("X-Token", "")
 
-    raise HTTPException(status_code=401, detail="Credenciales inválidas")
+    if token == '':
+        return JSONResponse(
+            status_code=401,
+            content={
+                "ok": False,
+                "msg": "Error token requerido"
+            }
+        )
+    
+    device = check_token(token)
 
+    if not device:
+        raise HTTPException(
+            status_code=401,
+            detail="Token inválido"
+        )
 
-@router.get("/sync")
-def me():
-    return {"user": "admin", "tipo": "cms"}
+    return sync_init(device)
+
+@router.post("/pull")
+async def login(request: Request):
+    #VALIDAR TOKEN
+    token = request.headers.get("X-Token", "")
+
+    if token == '':
+        return JSONResponse(
+            status_code=401,
+            content={
+                "ok": False,
+                "msg": "Error token requerido"
+            }
+        )
+    
+    device = check_token(token)
+
+    if not device:
+        raise HTTPException(
+            status_code=401,
+            detail="Token inválido"
+        )
+
+    body = await request.json()
+
+    return compile_pull_manifest(device,body)

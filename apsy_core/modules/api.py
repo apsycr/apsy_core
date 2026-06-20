@@ -5,7 +5,7 @@ import uvicorn
 import logging
 import secrets
 
-from modules.routes import auth, site, sync, proc, core, internal, device
+from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth
 from modules.ws.router import router as ws_router
 from modules.db import ejecutar_api, ejecutar
 
@@ -82,7 +82,10 @@ def start_api(config):
             "/ws/",
             "/internal/",
             "/ping",
-            "/device/register"
+            "/device/register",
+            "/auth/refresh",
+            "/oauth/",
+            "/sync/"
         ]
 
         if any(path.startswith(p) for p in public_paths):
@@ -110,7 +113,7 @@ def start_api(config):
                     status_code=401,
                     content={
                         "ok": False,
-                        "msg": "Token requerido"
+                        "msg": "Token requerido",
                     }
                 )
 
@@ -148,7 +151,7 @@ def start_api(config):
         if not token:
             return JSONResponse(
                 status_code=401,
-                content={"ok": 0, "msg": "Token requerido"}
+                content={"ok": 0, "msg": "Token requerido","error":"token_deleted"}
             )
 
         try:
@@ -188,7 +191,11 @@ def start_api(config):
             if row["expires_at"] < datetime.now():
                 return JSONResponse(
                     status_code=401,
-                    content={"ok": 0, "msg": "Token expirado"}
+                    content={
+                        "ok": 0,
+                        "error": "token_expired",
+                        "refresh_required": True
+                    }
                 )
 
         # =====================================
@@ -240,6 +247,8 @@ def start_api(config):
     app.include_router(proc.router, prefix=API_PREFIX)
     app.include_router(core.router, prefix=API_PREFIX)
     app.include_router(internal.router, prefix=API_PREFIX)
+    app.include_router(gateway.router, prefix=API_PREFIX)
+    app.include_router(oauth.router, prefix=API_PREFIX)
     app.include_router(device.router)
 
     # =====================================
@@ -265,35 +274,139 @@ def start_api(config):
         logger.info(f"Print request: {data}")
         return {"result": "sent"}
 
-    # =====================================
-    # 🔄 SYNC
-    # =====================================
-    @app.post("/sync/register")
-    def sync_register(data: dict):
-        logger.info(f"Caja registrada: {data}")
-        return {"status": "registered"}
-
-    @app.post("/sync/push")
-    def sync_push(data: dict):
-        logger.info(f"SYNC push: {data}")
-        return {"status": "received"}
-
-    @app.get("/sync/status")
-    def sync_status():
-        return {
-            "ws": "online",
-            "cloud": "connected"
-        }
 
     @app.get("/ping")
     async def ping():
         return {
             "ok": True,
-            "mirror": "CR-01",
             "version": "1.0.0",
             "empresa": "APSYCR",
             "timezone": "-06:00"
         }
+
+
+    @app.post("/auth/refresh")
+    async def refresh_token(
+        request: Request
+    ):
+
+        refresh_token = request.cookies.get(
+            "apsy_refresh"
+        )
+
+        if not refresh_token:
+
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": 0,
+                    "error": "refresh_missing"
+                }
+            )
+
+        from datetime import datetime, timedelta
+        from modules.db import ejecutar_api
+        from modules.routes.auth import generar_token
+
+        row = ejecutar_api(
+            """
+            SELECT
+                user_id,
+                sucursal_id,
+                device_id,
+                refresh_expires_at
+            FROM auth_tokens
+            WHERE refresh_token = %s
+            """,
+            (refresh_token,),
+            'one'
+        )
+
+        if not row:
+
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": 0,
+                    "error": "refresh_invalid"
+                }
+            )
+
+
+        if row["refresh_expires_at"] < datetime.now():
+
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": 0,
+                    "error": "refresh_expired"
+                }
+            )
+
+        # =====================================
+        # Generar nuevos tokens
+        # =====================================
+
+        new_access_token = generar_token()
+        new_refresh_token = generar_token()
+
+        access_expires_at = (
+            datetime.now() +
+            timedelta(hours=2)
+        )
+
+        refresh_expires_at = (
+            datetime.now() +
+            timedelta(days=30)
+        )
+
+        ejecutar_api(
+            """
+             UPDATE auth_tokens
+            SET
+                token = %s,
+                refresh_token = %s,
+                expires_at = %s,
+                refresh_expires_at = %s,
+                last_activity = NOW()
+            WHERE refresh_token = %s
+            """,
+            (
+                new_access_token,
+                new_refresh_token,
+                access_expires_at,
+                refresh_expires_at,
+                refresh_token
+            ),
+            'none'
+        )
+
+
+        response = JSONResponse(
+            content={
+                "ok": 1
+            }
+        )
+
+        is_https = request.url.scheme == "https"
+
+        response.set_cookie(
+            key="apsy_token",
+            value=new_access_token,
+            httponly=True,
+            secure=is_https,
+            samesite="Lax"
+        )
+
+        response.set_cookie(
+            key="apsy_refresh",
+            value=new_refresh_token,
+            httponly=True,
+            secure=is_https,
+            samesite="Lax"
+        )
+
+        return response
 
     logger.info(f'[API] ejecutando en {config["api"]["host"]}:{config["api"]["port"]}')
 

@@ -34,6 +34,15 @@ def ejecutar_sp(db, sp_name, input_params, fn=None):
     fn: opcional (para validar orden desde core_fields)
     """
 
+    # =====================================
+    # FLAGS INTERNAS
+    # =====================================
+
+    use_multi = input_params.pop(
+        "_pagination",
+        False
+    )
+
     # =========================
     # 🔐 ORDEN DE PARÁMETROS
     # =========================
@@ -63,4 +72,18 @@ def ejecutar_sp(db, sp_name, input_params, fn=None):
     # =========================
     # 🚀 EJECUCIÓN
     # =========================
-    return db(sql, tuple(args), "all")
+    fetch = "multi" if use_multi else "all"
+    result = db(
+        sql,
+        tuple(args),
+        fetch
+    )
+
+    if use_multi:
+
+        return {
+            "pagination": result[0][0] if result[0] else {},
+            "rows": result[1] if len(result) > 1 else []
+        }
+
+    return result

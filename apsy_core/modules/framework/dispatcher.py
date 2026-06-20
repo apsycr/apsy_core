@@ -9,7 +9,7 @@ MODULE_CACHE = {}
 # 🔹 HELPERS BASE
 # =========================
 
-def ejecutar_crud(db, tabla, params):
+def ejecutar_crud(tabla, params, request):
     accion = params.get("_accion")
 
     if not accion:
@@ -24,7 +24,7 @@ def ejecutar_crud(db, tabla, params):
         vals = ", ".join(["?"] * len(valores))
 
         sql = f"INSERT INTO {tabla} ({cols}) VALUES ({vals})"
-        return db(sql, tuple(valores), "none")
+        return ejecutar_api(sql, tuple(valores), "none",request)
 
     # 🔹 UPDATE
     elif accion == 2:
@@ -39,15 +39,20 @@ def ejecutar_crud(db, tabla, params):
         sql = f"UPDATE {tabla} SET {sets} WHERE id=?"
         valores.append(params["id"])
 
-        return db(sql, tuple(valores), "none")
+        return ejecutar_api(sql, tuple(valores), "none",request)
 
     # 🔹 DELETE
     elif accion == 3:
         if "id" not in params:
-            raise Exception("ID requerido para delete")
+            campos = [k for k in params.keys() if k not in ("id", "_accion")]
 
-        sql = f"DELETE FROM {tabla} WHERE id=?"
-        return db(sql, (params["id"],), "none")
+            sets = ", ".join([f"{k}=?" for k in campos])
+            valores = [params[k] for k in campos]
+
+            sql = f"DELETE FROM {tabla} WHERE {campos}"
+        else:
+            sql = f"UPDATE {tabla} SET activo=0 WHERE id=?"
+            return ejecutar_api(sql, (params["id"],), "none")
 
     else:
         raise Exception(f"Acción no soportada: {accion}")
@@ -159,7 +164,7 @@ def get_function(fn_path: str,request):
             return lambda db, p: ejecutar_query(db, ref, p, request), None
 
         elif tipo == "crud":
-            return lambda db, p: ejecutar_crud(db, ref, p), None
+            return lambda db, p: ejecutar_crud(ref, p, request), None
 
         else:
             return None, f"Tipo no soportado: {tipo}"

@@ -57,7 +57,7 @@ def load_config():
 
         base = ensure_encrypted_config(yaml.safe_load(f),BASE_DIR / "config.yml")
 
-    env_name = base.get("env", os.getenv("ENV", "dev")).lower()
+    env_name = base.get("env", os.getenv("ENV", "prod")).lower()
 
     env_path = BASE_DIR / "environment" / f"{env_name}.yml"
 

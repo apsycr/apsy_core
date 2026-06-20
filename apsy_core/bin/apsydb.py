@@ -166,9 +166,22 @@ def clean_sql_file(file_path):
 
     print("\n🧹 Limpiando dump...\n")
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    # with open(file_path, "r", encoding="utf-8") as f:
 
-        sql = f.read()
+    #     sql = f.read()
+
+    encodings = ['utf-8', 'cp1252', 'latin1']
+
+    for enc in encodings:
+        try:
+            with open(file_path, 'r', encoding=enc) as f:
+                sql = f.read()
+            print(f"Codificación detectada: {enc}")
+            break
+        except UnicodeDecodeError:
+            pass
+    else:
+        raise Exception("No se pudo determinar la codificación")
 
     # =================================
     # HEADER UTF8MB4
@@ -407,7 +420,7 @@ def restore(file):
         cmd = [
             "docker",
             "exec",
-            "-it",
+            "-i",
             CONTAINER,
 
             "mariadb",

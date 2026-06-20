@@ -18,20 +18,64 @@ def set_setting(key: str, value: str):
         """, (key, value))
 
 def guardar_en_ws_devices(device):
+
     with get_db() as db:
+
         db.execute("""
-            INSERT OR REPLACE INTO ws_devices
-            (device_id, nombre, mac, token, tipo, sucursal_id, terminal_id, last_seen)
-            VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            INSERT INTO ws_devices (
+                device_id,
+                nombre,
+                hostname,
+                ip,
+                mac,
+                app,
+                version,
+                token,
+                sucursal_id,
+                cedula,
+                terminal_id,
+                estado,
+                created_at,
+                updated_at,
+                last_seen
+            )
+            VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                1,
+                NOW(),
+                NOW(),
+                NOW()
+            )
+
+            ON DUPLICATE KEY UPDATE
+
+                nombre = VALUES(nombre),
+                hostname = VALUES(hostname),
+                ip = VALUES(ip),
+                mac = VALUES(mac),
+                app = VALUES(app),
+                version = VALUES(version),
+                sucursal_id = VALUES(sucursal_id),
+                cedula = VALUES(cedula),
+                terminal_id = VALUES(terminal_id),
+                last_seen = NOW(),
+                updated_at = NOW()
         """, [
+
             device["device_id"],
-            device["nombre"],
-            device["mac"],
+            device.get("nombre"),
+            device.get("hostname"),
+            device.get("ip"),
+            device.get("mac"),
+            device.get("app"),
+            device.get("version"),
             device["token"],
-            device["tipo"],
-            device["sucursal_id"],
-            device["terminal_id"]
+            device.get("sucursal_id"),
+            device.get("cedula"),
+            device.get("terminal_id")
         ])
+
+        return device
 
 def get_mirrors(ws_server_id):
 
