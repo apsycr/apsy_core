@@ -82,33 +82,45 @@ async def device(request: Request):
         body["fingerprint"]
     )
 
-    if mode == "new_device":
+    if mode == "existing_terminal":
 
-        tenant_id = create_tenant_auto(body)
+	    tenant_id = onboarding["empresa_id"]
 
-        terminal_id = register_terminal(
-            tenant_id,
-            body
-        )
+	    terminal_id = register_terminal(
+	        tenant_id,
+	        body
+	    )
 
-        assign_trial_plan(
-            tenant_id
-        )
+	    crm_state = "expansion"
 
-        crm_state = "new_customer"
+	elif mode == "new_branch":
 
-    else:
+	    tenant_id = onboarding["empresa_id"]
 
-        tenant_id = get_tenant_by_device(
-            body["fingerprint"]
-        )
+	    sucursal_id = create_sucursal_auto(tenant_id, body)
 
-        terminal_id = register_terminal(
-            tenant_id,
-            body
-        )
+	    terminal_id = register_terminal(
+	        tenant_id,
+	        body
+	    )
 
-        crm_state = "expansion"
+    	crm_state = "new_branch"
+
+    else:  # new_device
+
+	    tenant_id = create_tenant_auto(body)
+
+	    sucursal_id = create_sucursal_auto(tenant_id, body)
+
+	    terminal_id = register_terminal(
+	        tenant_id,
+	        body
+	    )
+
+	    assign_trial_plan(tenant_id)
+
+	    crm_state = "new_customer"
+
 
     return {
 

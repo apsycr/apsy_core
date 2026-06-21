@@ -239,7 +239,7 @@ def detect_onboarding_mode(fingerprint, cedula=None):
             }
 
     return {
-        "mode": "new_customer"
+        "mode": "new_device"
     }
 
 def get_install_credentials():
@@ -286,7 +286,24 @@ def register_terminal(empresa_id, data):
         data.get("version", "1.0.0")
     ), "id")
 
+def create_sucursal_auto(tenant_id, body):
+
+    return ejecutar_api("""
+        INSERT INTO crm_sucursales (
+            empresa_id,
+            nombre
+        )
+        VALUES (%s, %s)
+    """, (
+        tenant_id,
+        body.get("sucursal", "Principal")
+    ), "id")
+
 def create_tenant_auto(data):
+
+    cedula = data.get("cedula")
+
+    estado = "pending" if not cedula else "trial"
 
     sql = """
         INSERT INTO crm_tenants(
@@ -297,15 +314,16 @@ def create_tenant_auto(data):
             estado
         )
         VALUES(
-            %s,%s,%s,%s,'trial'
+            %s,%s,%s,%s,%s
         )
     """
 
     tenant_id = ejecutar_api(sql, (
-        data["nombre"],
-        data["cedula"],
-        data["telefono"],
-        data["email"]
+        data.get("nombre", ""),
+        cedula,
+        data.get("telefono", ""),
+        data.get("email", ""),
+        estado
     ),'id')
 
     ejecutar_api(
