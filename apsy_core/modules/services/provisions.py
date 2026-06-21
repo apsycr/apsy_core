@@ -284,7 +284,7 @@ def register_terminal(empresa_id, data):
         data.get("fingerprint", ""),
         data.get("tipo", "pos"),
         data.get("version", "1.0.0")
-    ), "none")
+    ), "id")
 
 def create_tenant_auto(data):
 
