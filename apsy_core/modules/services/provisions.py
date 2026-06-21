@@ -275,15 +275,16 @@ def register_terminal(empresa_id, data):
             device_uid,
             tipo,
             version
-        ) VALUES (%s,%s,%s,%s,%s,%s)
+        )
+        VALUES (%s,%s,%s,%s,%s,%s)
     """, (
         empresa_id,
-        data["hostname"],
-        data["ip"],
-        data["fingerprint"],
-        "pos",
+        data.get("hostname", ""),
+        data.get("ip", ""),
+        data.get("fingerprint", ""),
+        data.get("tipo", "pos"),
         data.get("version", "1.0.0")
-    ),"none")
+    ), "none")
 
 def create_tenant_auto(data):
 
