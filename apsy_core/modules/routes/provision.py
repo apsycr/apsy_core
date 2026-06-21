@@ -6,7 +6,6 @@ from modules.services.provisions import (
     create_session,
     validate_token_from_db,
     detect_onboarding_mode,
-    get_ws_settings,
     register_terminal,
     create_tenant_auto,
     assign_trial_plan,

@@ -13,7 +13,7 @@ def normalize_version(v):
         for x in str(v).split(".")
     )
 
-def get_database_path():
+def get_databases_path():
 
     paths = [
 
@@ -28,12 +28,13 @@ def get_database_path():
 
             return path
 
-    raise Exception(
-        "Database repository not found"
+    print(
+        "[PROVISION] databases repository not found"
     )
 
+    return None
 
-DATABASES_PATH = get_database_path()
+DATABASES_PATH = get_databases_path()
 
 
 def get_install_credentials():
@@ -62,6 +63,26 @@ def get_install_credentials():
 
     }
 
+def get_tenant_by_device(fingerprint):
+
+    sql = """
+        SELECT
+            tenant_id
+        FROM crm_dispositivos
+        WHERE fingerprint=%s
+        LIMIT 1
+    """
+
+    row = ejecutar_api(
+        sql,
+        (fingerprint,),
+        'one'
+    )
+
+    if not row:
+        return None
+
+    return row["tenant_id"]
 
 def get_latest_version():
 
