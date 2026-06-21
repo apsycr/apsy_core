@@ -238,7 +238,7 @@ def ejecutar(sql, params=None, fetch="one",db="db"):
                     break
         elif fetch == 'id':
             conn.commit()
-            return cursor.lastrowid
+            return cur.lastrowid
         else:
             result = cur.rowcount
         
