@@ -301,14 +301,12 @@ def create_tenant_auto(data):
         )
     """
 
-    ejecutar_api(sql, (
+    tenant_id = ejecutar_api(sql, (
         data["nombre"],
         data["cedula"],
         data["telefono"],
         data["email"]
-    ),'none')
-
-    tenant_id = db.lastrowid()
+    ),'id')
 
     ejecutar_api(
         """

@@ -236,6 +236,9 @@ def ejecutar(sql, params=None, fetch="one",db="db"):
 
                 if not cur.nextset():
                     break
+        elif fetch == 'id':
+            conn.commit()
+            return cursor.lastrowid
         else:
             result = cur.rowcount
         
