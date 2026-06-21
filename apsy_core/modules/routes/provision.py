@@ -8,6 +8,7 @@ from modules.services.provisions import (
 	detect_onboarding_mode,
 	register_terminal,
 	create_tenant_auto,
+	create_sucursal_auto,
 	assign_trial_plan,
 	get_tenant_by_device,
 	get_updates,
