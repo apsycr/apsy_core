@@ -326,17 +326,6 @@ def create_tenant_auto(data):
         estado
     ),'id')
 
-    # ejecutar_api(
-    #     """
-    #     INSERT INTO crm_sucursales(
-    #         empresa_id,
-    #         nombre
-    #     )
-    #     VALUES(%s,'Principal')
-    #     """,
-    #     (tenant_id,),'none'
-    # )
-
     return tenant_id
 
 def assign_trial_plan(tenant_id):
