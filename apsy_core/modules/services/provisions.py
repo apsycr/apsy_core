@@ -279,7 +279,7 @@ def register_terminal(empresa_id, data):
 
         data["fingerprint"],
 
-    ), "row")
+    ), "one")
 
     if terminal:
 
