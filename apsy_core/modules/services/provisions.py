@@ -217,7 +217,8 @@ def detect_onboarding_mode(fingerprint, cedula=None):
         return {
             "mode": "existing_terminal",
             "empresa_id": terminal["empresa_id"],
-            "sucursal_id": terminal["sucursal_id"]
+            "sucursal_id": terminal["sucursal_id"],
+            "terminal_id": terminal["id"]
         }
 
     if cedula:
@@ -264,26 +265,60 @@ def get_install_credentials():
 
     }
 
-
 def register_terminal(empresa_id, data):
 
-    return ejecutar_api("""
-        INSERT INTO crm_terminales (
-            empresa_id,
-            hostname,
-            ip,
-            device_uid,
-            tipo,
-            version
-        )
-        VALUES (%s,%s,%s,%s,%s,%s)
+    terminal = ejecutar_api("""
+
+        SELECT id
+
+        FROM crm_terminales
+
+        WHERE device_uid=%s
+
     """, (
+
+        data["fingerprint"],
+
+    ), "row")
+
+    if terminal:
+
+        return terminal["id"]
+
+    return ejecutar_api("""
+
+        INSERT INTO crm_terminales (
+
+            empresa_id,
+
+            hostname,
+
+            ip,
+
+            device_uid,
+
+            tipo,
+
+            version
+
+        )
+
+        VALUES (%s,%s,%s,%s,%s,%s)
+
+    """, (
+
         empresa_id,
-        data.get("hostname", ""),
-        data.get("ip", ""),
-        data.get("fingerprint", ""),
-        data.get("tipo", "pos"),
-        data.get("version", "1.0.0")
+
+        data.get("hostname",""),
+
+        data.get("ip",""),
+
+        data.get("fingerprint",""),
+
+        data.get("tipo","pos"),
+
+        data.get("version","1.0.0")
+
     ), "id")
 
 def create_sucursal_auto(tenant_id, body):
