@@ -24,8 +24,8 @@ async def callback(
 
     return oauth.callback(
         provider,
-        code,
-        state
+        code=code,
+        state=state
     )
 
 @router.get("/test")
