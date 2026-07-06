@@ -1,213 +1,213 @@
 from fastapi.responses import HTMLResponse
 
-
 class OAuthHTML:
 
-    self.script = """
-        function cerrar(){
+    def __init__(self):
+        self.script = """
+            function cerrar(){
 
-            if(window.opener){
+                if(window.opener){
 
-                window.opener.postMessage({
+                    window.opener.postMessage({
 
-                    event:"oauth",
+                        event:"oauth",
 
-                    ok:true,
+                        ok:true,
 
-                    correo:"%s"
+                        correo:"%s"
 
-                },"*");
+                    },"*");
+
+                }
+
+                window.close();
 
             }
 
-            window.close();
+            setTimeout(cerrar,1200);
+        """
 
-        }
+        self.style = """
+            .container{
 
-        setTimeout(cerrar,1200);
-    """
+                width:100%;
+                max-width:520px;
 
-    self.style = """
-        .container{
+            }
 
-            width:100%;
-            max-width:520px;
+            .card{
 
-        }
+                background:var(--bg-card);
 
-        .card{
+                border:1px solid var(--border);
 
-            background:var(--bg-card);
+                border-radius:18px;
 
-            border:1px solid var(--border);
+                padding:48px;
 
-            border-radius:18px;
+                box-shadow:0 15px 50px rgba(0,0,0,.45);
 
-            padding:48px;
+            }
 
-            box-shadow:0 15px 50px rgba(0,0,0,.45);
+            .title{
 
-        }
+                margin-bottom:12px;
 
-        .title{
+                text-align:center;
 
-            margin-bottom:12px;
+            }
 
-            text-align:center;
+            .subtitle{
 
-        }
+                margin-bottom:30px;
 
-        .subtitle{
+                text-align:center;
 
-            margin-bottom:30px;
+                color:var(--text-secondary);
 
-            text-align:center;
+                line-height:1.8;
 
-            color:var(--text-secondary);
+            }
 
-            line-height:1.8;
+            .logo{
 
-        }
+                font-size:56px;
 
-        .logo{
+                text-align:center;
 
-            font-size:56px;
+                margin-bottom:15px;
 
-            text-align:center;
+            }
 
-            margin-bottom:15px;
+            button{
 
-        }
+                width:100%;
 
-        button{
+                height:48px;
 
-            width:100%;
+                margin-top:10px;
 
-            height:48px;
+                border:none;
 
-            margin-top:10px;
+                border-radius:10px;
 
-            border:none;
+                background:var(--accent);
 
-            border-radius:10px;
+                color:#fff;
 
-            background:var(--accent);
+                font-size:15px;
 
-            color:#fff;
+                font-weight:600;
 
-            font-size:15px;
+                cursor:pointer;
 
-            font-weight:600;
+                transition:.2s;
 
-            cursor:pointer;
+            }
 
-            transition:.2s;
+            button:hover{
 
-        }
+                filter:brightness(1.08);
 
-        button:hover{
+            }
 
-            filter:brightness(1.08);
+            .btn-secondary{
 
-        }
+                background:#20252f;
 
-        .btn-secondary{
+            }
 
-            background:#20252f;
+            .btn-secondary:hover{
 
-        }
+                background:#2b313d;
 
-        .btn-secondary:hover{
+            }
 
-            background:#2b313d;
+            button:hover{
 
-        }
+                opacity:.92;
 
-        button:hover{
+            }
 
-            opacity:.92;
+            .footer{
 
-        }
+                margin-top:25px;
 
-        .footer{
+                text-align:center;
 
-            margin-top:25px;
+                color:gray;
 
-            text-align:center;
+                font-size:13px;
 
-            color:gray;
+            }
 
-            font-size:13px;
+            .form-group{
 
-        }
+                margin:22px 0;
 
-        .form-group{
+            }
 
-            margin:22px 0;
+            .form-group label{
 
-        }
+                display:block;
 
-        .form-group label{
+                margin-bottom:8px;
 
-            display:block;
+                color:var(--text-secondary);
 
-            margin-bottom:8px;
+                font-size:14px;
 
-            color:var(--text-secondary);
+                font-weight:500;
 
-            font-size:14px;
+            }
 
-            font-weight:500;
+            .form-group input{
 
-        }
+                width:100%;
 
-        .form-group input{
+                height:48px;
 
-            width:100%;
+                padding:0 16px;
 
-            height:48px;
+                border-radius:10px;
 
-            padding:0 16px;
+                border:1px solid var(--border);
 
-            border-radius:10px;
+                background:#11151d;
 
-            border:1px solid var(--border);
+                color:var(--text-primary);
 
-            background:#11151d;
+                font-size:15px;
 
-            color:var(--text-primary);
+                transition:
+                    border-color .2s,
+                    box-shadow .2s,
+                    background .2s;
 
-            font-size:15px;
+                outline:none;
 
-            transition:
-                border-color .2s,
-                box-shadow .2s,
-                background .2s;
+            }
 
-            outline:none;
+            .form-group input::placeholder{
 
-        }
+                color:#6b7280;
 
-        .form-group input::placeholder{
+            }
 
-            color:#6b7280;
+            .form-group input:hover{
 
-        }
+                border-color:#374151;
 
-        .form-group input:hover{
+            }
 
-            border-color:#374151;
+            .form-group input:focus{
 
-        }
+                border-color:var(--accent);
 
-        .form-group input:focus{
+                box-shadow:0 0 0 3px rgba(37,99,235,.20);
 
-            border-color:var(--accent);
-
-            box-shadow:0 0 0 3px rgba(37,99,235,.20);
-
-        }
-    """
+            }
+        """
 
     # ==========================================
     # OK
