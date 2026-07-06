@@ -89,7 +89,8 @@ class OAuth:
         )
 
         return self.html.ok(
-            correo=result["correo"]
+            correo=result["correo"],
+            oauth_uid=result["oauth_uid"]
         )
 
     # ==========================================

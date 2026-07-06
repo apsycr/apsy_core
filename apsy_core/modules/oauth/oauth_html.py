@@ -122,7 +122,7 @@ button:hover{
 }
 """
 
-    def _script(self, correo):
+    def _script(self, correo,oauth_uid):
 
         return f"""
 function cerrar() {{
@@ -133,7 +133,8 @@ function cerrar() {{
 
             event: "oauth",
             ok: true,
-            correo: "{correo}"
+            correo: "{correo}",
+            oauth_uid: "{oauth_uid}",
 
         }}, "*");
 
@@ -143,7 +144,7 @@ function cerrar() {{
 
 }}
 
-setTimeout(cerrar, 1200);
+setTimeout(cerrar, 3000);
 """
 
     def _page(
