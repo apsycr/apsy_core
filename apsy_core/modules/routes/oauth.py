@@ -9,10 +9,10 @@ router = APIRouter(
     tags=["OAuth"]
 )
 
-@router.get("/{provider}/login")
-async def login(provider: str):
+@router.get("/{provider}/connect")
+async def connect(provider: str):
 
-    return oauth.login(provider)
+    return oauth.connect(provider)
 
 
 @router.get("/{provider}/callback")

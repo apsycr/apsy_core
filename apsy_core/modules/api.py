@@ -84,9 +84,12 @@ def start_api(config):
             "/ping",
             "/device/register",
             "/auth/refresh",
+            "/auth/code",
+            "/mail/",
             "/oauth/",
             "/sync/",
-            "/provision/"
+            "/provision/",
+            "/download/"
         ]
 
         if any(path.startswith(p) for p in public_paths):
