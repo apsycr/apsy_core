@@ -8,185 +8,189 @@ from modules.oauth.provider_base import ProviderBase
 
 class GoogleProvider(ProviderBase):
 
-    AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-    TOKEN_URL = "https://oauth2.googleapis.com/token"
-    USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+	AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+	TOKEN_URL = "https://oauth2.googleapis.com/token"
+	USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
-    SCOPES = {
-        "SEND": [
-            "openid",
-            "email",
-            "profile",
-            "https://www.googleapis.com/auth/gmail.send"
-        ],
-        "READ": [
-            "openid",
-            "email",
-            "profile",
-            "https://www.googleapis.com/auth/gmail.readonly"
-        ],
-        "BOTH": [
-            "openid",
-            "email",
-            "profile",
-            "https://www.googleapis.com/auth/gmail.modify"
-        ]
-    }
+	SCOPES = {
+		"SEND": [
+			"openid",
+			"email",
+			"profile",
+			"https://www.googleapis.com/auth/gmail.send"
+		],
+		"READ": [
+			"openid",
+			"email",
+			"profile",
+			"https://www.googleapis.com/auth/gmail.readonly"
+		],
+		"BOTH": [
+			"openid",
+			"email",
+			"profile",
+			"https://www.googleapis.com/auth/gmail.modify"
+		]
+	}
 
-    def __init__(self):
+	def __init__(self):
 
-        super().__init__("google")
+		super().__init__("google")
 
-    # ==========================================
-    # CONNECT
-    # ==========================================
+	# ==========================================
+	# CONNECT
+	# ==========================================
 
-    def connect(
-        self,
-        uso="SEND",
-        state=None
-    ):
+	def connect(
+		self,
+		uso="SEND",
+		state=None
+	):
 
-        scopes = self.SCOPES.get(
-            uso.upper(),
-            self.SCOPES["SEND"]
-        )
+		scopes = self.SCOPES.get(
+			uso.upper(),
+			self.SCOPES["SEND"]
+		)
 
-        params = {
+		params = {
 
-            "client_id": self.client_id,
+			"client_id": self.client_id,
 
-            "redirect_uri": self.redirect_uri,
+			"redirect_uri": self.redirect_uri,
 
-            "response_type": "code",
+			"response_type": "code",
 
-            "scope": " ".join(scopes),
+			"scope": " ".join(scopes),
 
-            "access_type": "offline",
+			"access_type": "offline",
 
-            "prompt": "consent"
+			"prompt": "consent"
 
-        }
+		}
 
-        if state:
-            params["state"] = state
+		if state:
+			params["state"] = state
 
-        url = (
-            self.AUTH_URL +
-            "?" +
-            urlencode(params)
-        )
+		url = (
+			self.AUTH_URL +
+			"?" +
+			urlencode(params)
+		)
 
-        return RedirectResponse(url)
+		return RedirectResponse(url)
 
-    # ==========================================
-    # CALLBACK
-    # ==========================================
+	# ==========================================
+	# CALLBACK
+	# ==========================================
 
-    def callback(
-        self,
-        code,
-        state=None
-    ):
+	def callback(
+		self,
+		code,
+		state=None
+	):
 
-        response = requests.post(
+		response = requests.post(
 
-            self.TOKEN_URL,
+			self.TOKEN_URL,
 
-            data={
+			data={
 
-                "client_id": self.client_id,
+				"client_id": self.client_id,
 
-                "client_secret": self.client_secret,
+				"client_secret": self.client_secret,
 
-                "redirect_uri": self.redirect_uri,
+				"redirect_uri": self.redirect_uri,
 
-                "grant_type": "authorization_code",
+				"grant_type": "authorization_code",
 
-                "code": code
+				"code": code
 
-            }
+			}
 
-        )
+		)
 
-        token = response.json()
+		token = response.json()
 
-        access_token = token.get("access_token")
+		access_token = token.get("access_token")
 
-        refresh_token = token.get("refresh_token")
+		refresh_token = token.get("refresh_token")
 
-        expires_in = token.get("expires_in")
+		expires_in = token.get("expires_in")
 
-        user = requests.get(
+		user = requests.get(
 
-            self.USERINFO_URL,
+			self.USERINFO_URL,
 
-            headers={
+			headers={
 
-                "Authorization":
-                    f"Bearer {access_token}"
+				"Authorization":
+					f"Bearer {access_token}"
 
-            }
+			}
 
-        ).json()
+		).json()
 
-        return {
+		return {
 
-            "ok": True,
+			"ok": True,
 
-            "provider": "google",
+			"provider": self.provider,
 
-            "correo": user.get("email"),
+			"oauth_uid": user.get("id"),
 
-            "nombre": user.get("name"),
+			"correo": user.get("email"),
 
-            "picture": user.get("picture"),
+			"nombre": user.get("name"),
 
-            "access_token": access_token,
+			"picture": user.get("picture"),
 
-            "refresh_token": refresh_token,
+			"access_token": access_token,
 
-            "expires_in": expires_in,
+			"refresh_token": refresh_token,
 
-            "state": state
+			"expires_in": expires_in,
 
-        }
+			"scope": token.get("scope"),
 
-    # ==========================================
-    # REFRESH TOKEN
-    # ==========================================
+			"state": state
 
-    def refresh_token(
-        self,
-        refresh_token
-    ):
+		}
 
-        response = requests.post(
+	# ==========================================
+	# REFRESH TOKEN
+	# ==========================================
 
-            self.TOKEN_URL,
+	def refresh_token(
+		self,
+		refresh_token
+	):
 
-            data={
+		response = requests.post(
 
-                "client_id": self.client_id,
+			self.TOKEN_URL,
 
-                "client_secret": self.client_secret,
+			data={
 
-                "grant_type": "refresh_token",
+				"client_id": self.client_id,
 
-                "refresh_token": refresh_token
+				"client_secret": self.client_secret,
 
-            }
+				"grant_type": "refresh_token",
 
-        )
+				"refresh_token": refresh_token
 
-        return response.json()
+			}
 
-    # ==========================================
-    # DISCONNECT
-    # ==========================================
+		)
 
-    def disconnect(self, **kwargs):
+		return response.json()
 
-        return {
-            "ok": True
-        }
+	# ==========================================
+	# DISCONNECT
+	# ==========================================
+
+	def disconnect(self, **kwargs):
+
+		return {
+			"ok": True
+		}

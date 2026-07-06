@@ -1,23 +1,126 @@
 from modules.oauth.factory import OAuthFactory
+from modules.oauth.oauth_db import OAuthDB
+from modules.oauth.oauth_html import OAuthHTML
+from modules.oauth.oauth_state import OAuthState
+
 
 class OAuth:
 
-    def connect(self, provider, **kwargs):
+    def __init__(self):
 
-        return OAuthFactory.create(provider).connect(**kwargs)
+        self.db = OAuthDB()
+        self.html = OAuthHTML()
 
-    def callback(self, provider, **kwargs):
+    # ==========================================
+    # CONNECT
+    # ==========================================
 
-        return OAuthFactory.create(provider).callback(**kwargs)
+    def connect(
+        self,
+        provider,
+        idsucursal=0,
+        uso="SEND"
+    ):
 
-    def refresh_token(self, provider, **kwargs):
+        state = OAuthState.encode({
+            "idsucursal": idsucursal,
+            "uso": uso
+        })
 
-        return OAuthFactory.create(provider).refresh_token(**kwargs)
+        return OAuthFactory.create(provider).connect(
+            state=state
+        )
 
-    def disconnect(self, provider, **kwargs):
+    # ==========================================
+    # CALLBACK
+    # ==========================================
 
-        return OAuthFactory.create(provider).disconnect(**kwargs)
+    def callback(
+        self,
+        provider,
+        code,
+        state=None
+    ):
 
-    def status(self, provider, **kwargs):
+        result = OAuthFactory.create(provider).callback(
+            code=code,
+            state=state
+        )
 
-        return OAuthFactory.create(provider).status(**kwargs)
+        if not result["ok"]:
+
+            return self.html.error(
+                result.get("error","No fue posible conectar la cuenta.")
+            )
+
+        data = {
+            "idsucursal":0,
+            "uso":"SEND"
+        }
+
+        if state:
+            data = OAuthState.decode(state)
+
+        envio = data["uso"] in ("SEND","BOTH")
+        lectura = data["uso"] in ("READ","BOTH")
+
+        self.db.save(
+
+            idsucursal=data["idsucursal"],
+
+            provider=result["provider"],
+
+            oauth_uid=result["oauth_uid"],
+
+            correo=result["correo"],
+
+            access_token=result["access_token"],
+
+            refresh_token=result["refresh_token"],
+
+            expires_in=result["expires_in"],
+
+            scope=result["scope"],
+
+            envio=envio,
+
+            lectura=lectura
+
+        )
+
+        return self.html.ok(
+            correo=result["correo"]
+        )
+
+    # ==========================================
+    # REFRESH TOKEN
+    # ==========================================
+
+    def refresh_token(
+        self,
+        provider,
+        refresh_token
+    ):
+
+        return OAuthFactory.create(provider).refresh_token(
+            refresh_token
+        )
+
+    # ==========================================
+    # DISCONNECT
+    # ==========================================
+
+    def disconnect(
+        self,
+        provider,
+        idsucursal
+    ):
+
+        self.db.disconnect(
+            idsucursal,
+            provider
+        )
+
+        return {
+            "ok":True
+        }
