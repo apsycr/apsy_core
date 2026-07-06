@@ -15,13 +15,9 @@ class OAuthDB:
         refresh_token,
         expires_in,
         scope,
-        uso
+        envio,
+        lectura
     ):
-
-        uso = (uso or "").upper()
-
-        envio = uso in ("SEND", "BOTH")
-        lectura = uso in ("READ", "BOTH")
 
         token_expira = datetime.now() + timedelta(
             seconds=int(expires_in or 0)
