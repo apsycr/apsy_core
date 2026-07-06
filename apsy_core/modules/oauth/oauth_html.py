@@ -12,7 +12,7 @@ class OAuthHTML:
         correo: str
     ):
 
-        html = f"""
+        html = """
 <!DOCTYPE html>
 <html lang="es">
 
