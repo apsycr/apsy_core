@@ -3,6 +3,30 @@ from fastapi.responses import HTMLResponse
 
 class OAuthHTML:
 
+    self.script = """
+        function cerrar(){
+
+            if(window.opener){
+
+                window.opener.postMessage({
+
+                    event:"oauth",
+
+                    ok:true,
+
+                    correo:"%s"
+
+                },"*");
+
+            }
+
+            window.close();
+
+        }
+
+        setTimeout(cerrar,1200);
+    """
+
     self.style = """
         .container{
 
@@ -251,31 +275,7 @@ class OAuthHTML:
 
 </div>
 
-<script>
-
-function cerrar(){
-
-    if(window.opener){
-
-        window.opener.postMessage({
-
-            event:"oauth",
-
-            ok:true,
-
-            correo:"%s"
-
-        },"*");
-
-    }
-
-    window.close();
-
-}
-
-setTimeout(cerrar,1200);
-
-</script>
+<script> ${script} </script>
 
 </body>
 
