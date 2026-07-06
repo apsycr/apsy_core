@@ -1,234 +1,176 @@
 from fastapi.responses import HTMLResponse
 
+
 class OAuthHTML:
 
     def __init__(self):
-        self.script = """
-            function cerrar(){
-
-                if(window.opener){
-
-                    window.opener.postMessage({
-
-                        event:"oauth",
-
-                        ok:true,
-
-                        correo:"%s"
-
-                    },"*");
-
-                }
-
-                window.close();
-
-            }
-
-            setTimeout(cerrar,1200);
-        """
 
         self.style = """
-            .container{
+:root{
 
-                width:100%;
-                max-width:520px;
+    --bg:#0f172a;
+    --bg-card:#1e293b;
+    --border:#334155;
+    --text:#f8fafc;
+    --text-secondary:#94a3b8;
+    --accent:#2563eb;
 
-            }
+}
 
-            .card{
+*{
 
-                background:var(--bg-card);
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 
-                border:1px solid var(--border);
+}
 
-                border-radius:18px;
+body{
 
-                padding:48px;
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
 
-                box-shadow:0 15px 50px rgba(0,0,0,.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
 
-            }
+    min-height:100vh;
+    padding:30px;
 
-            .title{
+}
 
-                margin-bottom:12px;
+.container{
 
-                text-align:center;
+    width:100%;
+    max-width:520px;
 
-            }
+}
 
-            .subtitle{
+.card{
 
-                margin-bottom:30px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:18px;
 
-                text-align:center;
+    padding:42px;
 
-                color:var(--text-secondary);
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
 
-                line-height:1.8;
+}
 
-            }
+.logo{
 
-            .logo{
+    font-size:58px;
+    text-align:center;
+    margin-bottom:20px;
 
-                font-size:56px;
+}
 
-                text-align:center;
+.title{
 
-                margin-bottom:15px;
+    text-align:center;
+    margin-bottom:15px;
 
-            }
+}
 
-            button{
+.subtitle{
 
-                width:100%;
+    text-align:center;
+    color:var(--text-secondary);
+    line-height:1.8;
 
-                height:48px;
+}
 
-                margin-top:10px;
+button{
 
-                border:none;
+    width:100%;
+    height:48px;
 
-                border-radius:10px;
+    margin-top:30px;
 
-                background:var(--accent);
+    border:none;
+    border-radius:10px;
 
-                color:#fff;
+    background:var(--accent);
 
-                font-size:15px;
+    color:white;
 
-                font-weight:600;
+    font-size:15px;
+    font-weight:600;
 
-                cursor:pointer;
+    cursor:pointer;
 
-                transition:.2s;
+}
 
-            }
+button:hover{
 
-            button:hover{
+    filter:brightness(1.08);
 
-                filter:brightness(1.08);
+}
 
-            }
+.footer{
 
-            .btn-secondary{
+    margin-top:25px;
 
-                background:#20252f;
+    text-align:center;
 
-            }
+    color:#64748b;
 
-            .btn-secondary:hover{
+    font-size:13px;
 
-                background:#2b313d;
+}
+"""
 
-            }
+    def _script(self, correo):
 
-            button:hover{
+        return f"""
+function cerrar() {{
 
-                opacity:.92;
+    if(window.opener) {{
 
-            }
+        window.opener.postMessage({{
 
-            .footer{
+            event: "oauth",
+            ok: true,
+            correo: "{correo}"
 
-                margin-top:25px;
+        }}, "*");
 
-                text-align:center;
+    }}
 
-                color:gray;
+    window.close();
 
-                font-size:13px;
+}}
 
-            }
+setTimeout(cerrar, 1200);
+"""
 
-            .form-group{
-
-                margin:22px 0;
-
-            }
-
-            .form-group label{
-
-                display:block;
-
-                margin-bottom:8px;
-
-                color:var(--text-secondary);
-
-                font-size:14px;
-
-                font-weight:500;
-
-            }
-
-            .form-group input{
-
-                width:100%;
-
-                height:48px;
-
-                padding:0 16px;
-
-                border-radius:10px;
-
-                border:1px solid var(--border);
-
-                background:#11151d;
-
-                color:var(--text-primary);
-
-                font-size:15px;
-
-                transition:
-                    border-color .2s,
-                    box-shadow .2s,
-                    background .2s;
-
-                outline:none;
-
-            }
-
-            .form-group input::placeholder{
-
-                color:#6b7280;
-
-            }
-
-            .form-group input:hover{
-
-                border-color:#374151;
-
-            }
-
-            .form-group input:focus{
-
-                border-color:var(--accent);
-
-                box-shadow:0 0 0 3px rgba(37,99,235,.20);
-
-            }
-        """
-
-    # ==========================================
-    # OK
-    # ==========================================
-
-    def ok(
+    def _page(
         self,
-        correo: str
+        titulo,
+        icono,
+        mensaje,
+        boton,
+        script=""
     ):
 
-        html = f"""
+        return f"""
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
 <meta charset="utf-8">
 
-<title>Cuenta conectada</title>
+<title>{titulo}</title>
 
-<style> ${self.style} </style>
+<style>
+
+{self.style}
+
+</style>
 
 </head>
 
@@ -238,28 +180,21 @@ class OAuthHTML:
 
     <div class="card">
 
-        <div class="logo">
-            ✅
-        </div>
+        <div class="logo">{icono}</div>
 
         <h2 class="title">
 
-            Cuenta conectada
+            {titulo}
 
         </h2>
 
         <p class="subtitle">
 
-            La cuenta <b>{correo}</b><br>
-            fue autorizada correctamente.
-
-            <br><br>
-
-            Ya puede regresar a APSY ERP.
+            {mensaje}
 
         </p>
 
-        <button onclick="cerrar()">
+        <button onclick="{boton}">
 
             Continuar
 
@@ -275,73 +210,66 @@ class OAuthHTML:
 
 </div>
 
-<script> ${self.script} </script>
+<script>
 
-</body>
+{script}
 
-</html>
-""" % correo
-
-        return HTMLResponse(html)
-
-    # ==========================================
-    # ERROR
-    # ==========================================
-
-    def error(
-        self,
-        mensaje="No fue posible conectar la cuenta."
-    ):
-
-        html = f"""
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-
-<meta charset="utf-8">
-
-<title>Error</title>
-
-<style> ${self.style} </style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-    <div class="card">
-
-        <div class="logo">
-            ❌
-        </div>
-
-        <h2 class="title">
-
-            Error de conexión
-
-        </h2>
-
-        <p class="subtitle">
-
-            {mensaje}
-
-        </p>
-
-        <button onclick="window.close()">
-
-            Cerrar
-
-        </button>
-
-    </div>
-
-</div>
+</script>
 
 </body>
 
 </html>
 """
 
-        return HTMLResponse(html)
+    # ==========================================
+    # OK
+    # ==========================================
+
+    def ok(self, correo):
+
+        mensaje = f"""
+La cuenta <b>{correo}</b><br><br>
+fue autorizada correctamente.<br><br>
+
+Esta ventana se cerrará automáticamente.
+"""
+
+        return HTMLResponse(
+
+            self._page(
+
+                titulo="Cuenta conectada",
+
+                icono="✅",
+
+                mensaje=mensaje,
+
+                boton="cerrar()",
+
+                script=self._script(correo)
+
+            )
+
+        )
+
+    # ==========================================
+    # ERROR
+    # ==========================================
+
+    def error(self, mensaje="No fue posible conectar la cuenta."):
+
+        return HTMLResponse(
+
+            self._page(
+
+                titulo="Error de conexión",
+
+                icono="❌",
+
+                mensaje=mensaje,
+
+                boton="window.close()"
+
+            )
+
+        )
