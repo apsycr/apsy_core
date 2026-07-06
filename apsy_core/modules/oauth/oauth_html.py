@@ -226,7 +226,7 @@ setTimeout(cerrar, 3000);
     # OK
     # ==========================================
 
-    def ok(self, correo):
+    def ok(self, correo, oauth_uid):
 
         mensaje = f"""
 La cuenta <b>{correo}</b><br><br>
@@ -247,7 +247,7 @@ Esta ventana se cerrará automáticamente.
 
                 boton="cerrar()",
 
-                script=self._script(correo)
+                script=self._script(correo,oauth_uid)
 
             )
 
