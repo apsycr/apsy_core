@@ -275,7 +275,7 @@ class OAuthHTML:
 
 </div>
 
-<script> ${script} </script>
+<script> ${self.script} </script>
 
 </body>
 
