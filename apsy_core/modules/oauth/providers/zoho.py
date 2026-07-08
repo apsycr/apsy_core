@@ -140,8 +140,6 @@ class ZohoProvider(ProviderBase):
             options={"verify_signature": False}
         )
 
-        cuenta = account["data"][0]
-
         return {
 
             "ok": True,
