@@ -1,5 +1,6 @@
 from urllib.parse import urlencode
 import requests
+import jwt
 
 from fastapi.responses import RedirectResponse
 
@@ -132,18 +133,12 @@ class ZohoProvider(ProviderBase):
 
         expires_in = token.get("expires_in")
 
-        account = requests.get(
+        id_token = token.get("id_token")
 
-            self._url(self.USERINFO_URL,dc),
-
-            headers={
-
-                "Authorization":
-                    f"Zoho-oauthtoken {access_token}"
-
-            }
-
-        ).json()
+        userinfo = jwt.decode(
+            id_token,
+            options={"verify_signature": False}
+        )
 
         cuenta = account["data"][0]
 
@@ -153,13 +148,13 @@ class ZohoProvider(ProviderBase):
 
             "provider": self.provider,
 
-            "oauth_uid": cuenta.get("accountId"),
+            "oauth_uid": userinfo.get("sub"),
 
-            "correo": cuenta.get("emailAddress"),
+            "correo": userinfo.get("email"),
 
-            "nombre": cuenta.get("displayName"),
+            "nombre": userinfo.get("name"),
 
-            "picture": None,
+            "picture": userinfo.get("picture"),
 
             "access_token": access_token,
 
