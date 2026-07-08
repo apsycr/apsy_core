@@ -10,9 +10,15 @@ router = APIRouter(
 )
 
 @router.get("/{provider}/connect")
-async def connect(provider: str):
+async def connect(
+    provider: str,
+    context: str = "{}"
+):
 
-    return oauth.connect(provider)
+    return oauth.connect(
+        provider,
+        json.loads(context)
+    )
 
 
 @router.get("/{provider}/callback")
