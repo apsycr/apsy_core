@@ -15,12 +15,21 @@ class ZohoProvider(ProviderBase):
 
     SCOPES = {
         "SEND": [
+            "openid",
+            "email",
+            "profile",
             "ZohoMail.messages.CREATE"
         ],
         "READ": [
+            "openid",
+            "email",
+            "profile",
             "ZohoMail.messages.READ"
         ],
         "BOTH": [
+            "openid",
+            "email",
+            "profile",
             "ZohoMail.messages.CREATE",
             "ZohoMail.messages.READ"
         ]
