@@ -5,7 +5,7 @@ import uvicorn
 import logging
 import secrets
 
-from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision
+from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision, mail
 from modules.ws.router import router as ws_router
 from modules.db import ejecutar_api, ejecutar
 
@@ -85,7 +85,7 @@ def start_api(config):
             "/device/register",
             "/auth/refresh",
             "/auth/code",
-            "/mail/",
+            "/mail/code",
             "/oauth/",
             "/sync/",
             "/provision/",
