@@ -15,7 +15,8 @@ class OAuthDB:
         refresh_token,
         expires_in,
         scope,
-        uso
+        uso,
+        dc
     ):
 
         token_expira = datetime.now() + timedelta(
