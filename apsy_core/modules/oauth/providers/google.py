@@ -43,9 +43,12 @@ class GoogleProvider(ProviderBase):
 
 	def connect(
 		self,
-		uso="SEND",
 		state=None
 	):
+
+		context = OAuthState.decode(state)
+
+		uso = context.get("uso", "SEND")
 
 		scopes = self.SCOPES.get(
 			uso.upper(),

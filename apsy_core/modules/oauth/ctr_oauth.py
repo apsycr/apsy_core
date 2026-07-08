@@ -6,122 +6,108 @@ from modules.oauth.oauth_state import OAuthState
 
 class OAuth:
 
-    def __init__(self):
+	def __init__(self):
 
-        self.db = OAuthDB()
-        self.html = OAuthHTML()
+		self.db = OAuthDB()
+		self.html = OAuthHTML()
 
-    # ==========================================
-    # CONNECT
-    # ==========================================
+	# ==========================================
+	# CONNECT
+	# ==========================================
 
-    def connect(
-        self,
-        provider,
-        idsucursal=0,
-        uso="SEND"
-    ):
+	def connect(
+		self,
+		provider,
+		context=None
+	):
+		context = context or {}
 
-        state = OAuthState.encode({
-            "idsucursal": idsucursal,
-            "uso": uso
-        })
+		state = OAuthState.encode(context or {})
 
-        return OAuthFactory.create(provider).connect(
-            state=state
-        )
+		return OAuthFactory.create(provider).connect(
+			state=state
+		)
 
-    # ==========================================
-    # CALLBACK
-    # ==========================================
+	# ==========================================
+	# CALLBACK
+	# ==========================================
 
-    def callback(
-        self,
-        provider,
-        code,
-        state=None
-    ):
+	def callback(
+		self,
+		provider,
+		code,
+		state=None
+	):
 
-        result = OAuthFactory.create(provider).callback(
-            code=code,
-            state=state
-        )
+		result = OAuthFactory.create(provider).callback(
+			code=code,
+			state=state
+		)
 
-        if not result["ok"]:
+		if not result["ok"]:
 
-            return self.html.error(
-                result.get("error","No fue posible conectar la cuenta.")
-            )
+			return self.html.error(
+				result.get("error","No fue posible conectar la cuenta.")
+			)
 
-        data = {
-            "idsucursal":0,
-            "uso":"SEND"
-        }
+		context  = OAuthState.decode(state)
 
-        if state:
-            data = OAuthState.decode(state)
+		self.db.save(
 
-        envio = data["uso"] in ("SEND","BOTH")
-        lectura = data["uso"] in ("READ","BOTH")
+			idtenant=context["idtenant"],
 
-        self.db.save(
+			provider=result["provider"],
 
-            idsucursal=data["idsucursal"],
+			oauth_uid=result["oauth_uid"],
 
-            provider=result["provider"],
+			correo=result["correo"],
 
-            oauth_uid=result["oauth_uid"],
+			access_token=result["access_token"],
 
-            correo=result["correo"],
+			refresh_token=result["refresh_token"],
 
-            access_token=result["access_token"],
+			expires_in=result["expires_in"],
 
-            refresh_token=result["refresh_token"],
+			scope=result["scope"],
 
-            expires_in=result["expires_in"],
+			envio=envio,
 
-            scope=result["scope"],
+		)
 
-            envio=envio,
+		return self.html.ok(
+			correo=result["correo"],
+			oauth_uid=result["oauth_uid"]
+		)
 
-            lectura=lectura
+	# ==========================================
+	# REFRESH TOKEN
+	# ==========================================
 
-        )
+	def refresh_token(
+		self,
+		provider,
+		refresh_token
+	):
 
-        return self.html.ok(
-            correo=result["correo"],
-            oauth_uid=result["oauth_uid"]
-        )
+		return OAuthFactory.create(provider).refresh_token(
+			refresh_token
+		)
 
-    # ==========================================
-    # REFRESH TOKEN
-    # ==========================================
+	# ==========================================
+	# DISCONNECT
+	# ==========================================
 
-    def refresh_token(
-        self,
-        provider,
-        refresh_token
-    ):
+	def disconnect(
+		self,
+		provider,
+		idsucursal
+	):
 
-        return OAuthFactory.create(provider).refresh_token(
-            refresh_token
-        )
+		self.db.disconnect(
+			idsucursal,
+			provider
+		)
 
-    # ==========================================
-    # DISCONNECT
-    # ==========================================
-
-    def disconnect(
-        self,
-        provider,
-        idsucursal
-    ):
-
-        self.db.disconnect(
-            idsucursal,
-            provider
-        )
-
-        return {
-            "ok":True
-        }
+		return {
+			"ok":True
+		}

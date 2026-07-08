@@ -7,7 +7,7 @@ class OAuthDB:
 
     def save(
         self,
-        idsucursal,
+        idtenant,
         oauth_uid,
         provider,
         correo,
@@ -15,8 +15,7 @@ class OAuthDB:
         refresh_token,
         expires_in,
         scope,
-        envio,
-        lectura
+        uso
     ):
 
         token_expira = datetime.now() + timedelta(
@@ -25,24 +24,21 @@ class OAuthDB:
 
         sql = """
             INSERT INTO oauth_sucursales(
-                idsucursal,
-                tipo,
+                idtenant,
                 provider,
-                correo,
                 oauth_uid,
+                correo,
                 access_token,
                 refresh_token,
                 token_expira,
                 scope,
                 estado,
-                envio,
-                lectura,
+                uso,
                 fecha_creacion,
                 fecha_actualizacion
             )
             VALUES(
                 %s,
-                'CLOUD',
                 %s,
                 %s,
                 %s,
@@ -52,37 +48,34 @@ class OAuthDB:
                 %s,
                 1,
                 %s,
-                %s,
                 NOW(),
                 NOW()
             )
             ON DUPLICATE KEY UPDATE
                 provider            = VALUES(provider),
-                correo              = VALUES(correo),
                 oauth_uid           = VALUES(oauth_uid),
+                correo              = VALUES(correo),
                 access_token        = VALUES(access_token),
                 refresh_token       = VALUES(refresh_token),
                 token_expira        = VALUES(token_expira),
                 scope               = VALUES(scope),
                 estado              = 1,
-                envio               = VALUES(envio),
-                lectura             = VALUES(lectura),
+                uso                 = VALUES(uso),
                 fecha_actualizacion = NOW()
         """
 
         ejecutar_api(
             sql,
             (
-                idsucursal,
+                idtenant,
                 provider,
-                correo,
                 oauth_uid,
+                correo,
                 access_token,
                 refresh_token,
                 token_expira,
                 scope,
-                int(envio),
-                int(lectura),
+                uso,
             ),
             "none"
         )
