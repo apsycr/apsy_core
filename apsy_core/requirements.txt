@@ -8,3 +8,4 @@ apscheduler
 mysql-connector-python
 cryptography
 mariadb
+PyJWT
