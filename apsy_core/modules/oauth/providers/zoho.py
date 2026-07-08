@@ -4,6 +4,7 @@ import requests
 from fastapi.responses import RedirectResponse
 
 from modules.oauth.provider_base import ProviderBase
+from modules.oauth.oauth_state import OAuthState
 
 
 class ZohoProvider(ProviderBase):
