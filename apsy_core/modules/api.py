@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
 import logging
@@ -19,6 +20,18 @@ def start_api(config):
     # =====================================
     # 🔐 AUTH MIDDLEWARE
     # =====================================
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "https://apsycr.com",
+            "https://www.apsycr.com",
+        ],
+        allow_origin_regex=r"https?://(127\.0\.0\.1|localhost)(:\d+)?",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     @app.middleware("http")
     async def auth_middleware(request: Request, call_next):
 
