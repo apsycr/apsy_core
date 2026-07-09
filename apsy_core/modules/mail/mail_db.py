@@ -6,14 +6,27 @@ from modules.db import ejecutar_api
 
 class MailDB:
 
+	def update_refresh(vid, access_token, token_expira):
+		ejecutar_api("""
+			UPDATE oauth_sucursales
+			SET
+			    access_token=?,
+			    token_expira=?
+			WHERE id=?
+			""",
+			(access_token, token_expira, vid),
+			'none')
+
 	def get_account(self,idtenant = 0):
 		return ejecutar_api(
 			"""
-			SELECT 
+			SELECT
+				id, 
 				provider,
 				correo,
 				access_token,
-				refresh_token
+				refresh_token,
+				token_expira
 			FROM oauth_sucursales
 			WHERE idtenant = %s
 			AND uso = 'SEND'

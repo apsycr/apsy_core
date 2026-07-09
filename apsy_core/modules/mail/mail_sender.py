@@ -51,7 +51,7 @@ class MailSender:
 
             from modules.mail.providers.zoho import ZohoMail
 
-            mail = ZohoMail(cuenta)
+            mail = ZohoMail(cuenta,self.db)
 
         elif provider=="microsoft":
             print(123)

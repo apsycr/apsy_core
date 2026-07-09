@@ -1,23 +1,26 @@
-from email.message import EmailMessage
+from modules.config import load_confi
+from datetime import datetime, timedelta
 from pathlib import Path
-from modules.config import load_config
+from email.message import EmailMessage
 
+import requests
 import mimetypes
 import smtplib
 import ssl
-import aiohttp
 
 class ZohoMail:
 
 
-    def __init__(self, cuenta):
+    def __init__(self, cuenta, db):
 
         self.cuenta = cuenta
 
         self.correo = cuenta["correo"]
         self.access_token = cuenta["access_token"]
         self.refresh_token = cuenta["refresh_token"]
+        self.token_expira  = cuenta[""]
         self.load_config()
+        self.db = db
 
     def load_config(self):
 
@@ -61,30 +64,29 @@ class ZohoMail:
 
         }
 
+        result = requests.post(
+            url,
+            data=data,
+            timeout=15
+        )
 
-        async with aiohttp.ClientSession() as session:
+        result = response.json()
 
-            async with session.post(
-                url,
-                data=data
-            ) as response:
+        if "access_token" not in result:
 
-
-                result = await response.json()
-
-
-                if "access_token" not in result:
-
-                    raise Exception(
-                        f"Error renovando token Zoho: {result}"
-                    )
+            raise Exception(
+                f"Error renovando token Zoho: {result}"
+            )
 
 
-                self.access_token = result["access_token"]
+        self.access_token = result["access_token"]
 
+        self.db.update_refresh(
+            self.cuenta['id'],
+            result["access_token"],
+            result['expires_in'])
 
-                return self.access_token
-
+        return self.access_token
 
 
     async def send(
@@ -97,7 +99,13 @@ class ZohoMail:
         adjuntos:list=None
     ):
 
-        if not self.access_token:
+        if (
+            not self.access_token
+            or not self.token_expira
+            or datetime.now() >= (
+                self.token_expira - timedelta(minutes=5)
+            )
+        ):
 
             await self.refresh_access_token()
 
