@@ -7,7 +7,7 @@ from modules.db import ejecutar_api
 class MailDB:
 
 	def get_account(self,idtenant = 0):
-		ejecutar_api(
+		return ejecutar_api(
 			"""
 			SELECT 
 				provider,
