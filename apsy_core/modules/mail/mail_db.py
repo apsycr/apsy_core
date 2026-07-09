@@ -6,7 +6,7 @@ from modules.db import ejecutar_api
 
 class MailDB:
 
-	def get_account(idtenant = 0):
+	def get_account(self,idtenant = 0):
 		ejecutar_api(
 			"""
 			SELECT 
