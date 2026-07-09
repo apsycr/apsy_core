@@ -6,129 +6,148 @@ from modules.db import ejecutar_api
 
 class MailDB:
 
-    # ==========================================
-    # GENERATE CODE
-    # ==========================================
+	def get_account(idtenant = 0):
+		ejecutar_api(
+			"""
+			SELECT 
+				provider,
+				correo,
+				access_token,
+				refresh_token,
+				client_id,
+				client_secret
+			FROM oauth_sucursales
+			WHERE idtenant = %s
+			AND uso = 'SEND'
+			AND estado = 1
+			LIMIT 1
+			""",
+			(idtenant,),
+			"one")
 
-    def generate_code(
-        self,
-        tipo,
-        correo,
-        fingerprint=None,
-        idtenant=None,
-        minutos=10
-    ):
+	# ==========================================
+	# GENERATE CODE
+	# ==========================================
 
-        codigo = str(
-            random.randint(
-                100000,
-                999999
-            )
-        )
+	def generate_code(
+		self,
+		tipo,
+		correo,
+		fingerprint=None,
+		idtenant=None,
+		minutos=10
+	):
 
-        fecha_expira = (
-            datetime.now() +
-            timedelta(minutes=minutos)
-        )
+		codigo = str(
+			random.randint(
+				100000,
+				999999
+			)
+		)
 
-        ejecutar_api(
-            """
-            UPDATE mail_codes
-            SET estado=0
-            WHERE
-                correo=%s
-                AND tipo=%s
-                AND estado=1
-            """,
-            (
-                correo,
-                tipo
-            ),
-            "none"
-        )
+		fecha_expira = (
+			datetime.now() +
+			timedelta(minutes=minutos)
+		)
 
-        ejecutar_api(
-            """
-            INSERT INTO mail_codes(
-                tipo,
-                correo,
-                codigo,
-                fingerprint,
-                idtenant,
-                fecha_expira
-            )
-            VALUES(
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s
-            )
-            """,
-            (
-                tipo,
-                correo,
-                codigo,
-                fingerprint,
-                idtenant,
-                fecha_expira
-            ),
-            "none"
-        )
+		ejecutar_api(
+			"""
+			UPDATE mail_codes
+			SET estado=0
+			WHERE
+				correo=%s
+				AND tipo=%s
+				AND estado=1
+			""",
+			(
+				correo,
+				tipo
+			),
+			"none"
+		)
 
-        return codigo
+		ejecutar_api(
+			"""
+			INSERT INTO mail_codes(
+				tipo,
+				correo,
+				codigo,
+				fingerprint,
+				idtenant,
+				fecha_expira
+			)
+			VALUES(
+				%s,
+				%s,
+				%s,
+				%s,
+				%s,
+				%s
+			)
+			""",
+			(
+				tipo,
+				correo,
+				codigo,
+				fingerprint,
+				idtenant,
+				fecha_expira
+			),
+			"none"
+		)
 
-    # ==========================================
-    # VERIFY CODE
-    # ==========================================
+		return codigo
 
-    def verify_code(
-        self,
-        correo,
-        codigo
-    ):
+	# ==========================================
+	# VERIFY CODE
+	# ==========================================
 
-        result = ejecutar_api(
-            """
-            SELECT
-                id,
-                fecha_expira
-            FROM mail_codes
-            WHERE
-                correo=%s
-                AND codigo=%s
-                AND estado=1
-            ORDER BY id DESC
-            LIMIT 1
-            """,
-            (
-                correo,
-                codigo
-            ),
-            "one"
-        )
+	def verify_code(
+		self,
+		correo,
+		codigo
+	):
 
-        if not result:
+		result = ejecutar_api(
+			"""
+			SELECT
+				id,
+				fecha_expira
+			FROM mail_codes
+			WHERE
+				correo=%s
+				AND codigo=%s
+				AND estado=1
+			ORDER BY id DESC
+			LIMIT 1
+			""",
+			(
+				correo,
+				codigo
+			),
+			"one"
+		)
 
-            return False
+		if not result:
 
-        if result["fecha_expira"] < datetime.now():
+			return False
 
-            return False
+		if result["fecha_expira"] < datetime.now():
 
-        ejecutar_api(
-            """
-            UPDATE mail_codes
-            SET
-                estado=2,
-                fecha_validacion=NOW()
-            WHERE id=%s
-            """,
-            (
-                result["id"],
-            ),
-            "none"
-        )
+			return False
 
-        return True
+		ejecutar_api(
+			"""
+			UPDATE mail_codes
+			SET
+				estado=2,
+				fecha_validacion=NOW()
+			WHERE id=%s
+			""",
+			(
+				result["id"],
+			),
+			"none"
+		)
+
+		return True
