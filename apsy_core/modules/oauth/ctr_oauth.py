@@ -3,7 +3,6 @@ from modules.oauth.oauth_db import OAuthDB
 from modules.oauth.oauth_html import OAuthHTML
 from modules.oauth.oauth_state import OAuthState
 
-
 class OAuth:
 
 	def __init__(self):

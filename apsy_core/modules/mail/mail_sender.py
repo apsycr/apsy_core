@@ -5,7 +5,6 @@ from datetime import datetime
 
 class MailSender:
 
-
     def __init__(self):
 
         self.db = MailDB()

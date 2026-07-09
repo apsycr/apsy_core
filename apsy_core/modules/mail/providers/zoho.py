@@ -1,5 +1,6 @@
 from email.message import EmailMessage
 from pathlib import Path
+from modules.config import load_config
 
 import mimetypes
 import smtplib
@@ -16,6 +17,28 @@ class ZohoMail:
         self.correo = cuenta["correo"]
         self.access_token = cuenta["access_token"]
         self.refresh_token = cuenta["refresh_token"]
+        self.load_config()
+
+    def load_config(self):
+
+        cfg = load_config()
+
+        providers = cfg.get("oauth", {}).get("providers", {})
+
+        if self.provider not in providers:
+            raise Exception(
+                f"Proveedor '{self.provider}' no encontrado en configuracion"
+            )
+
+        settings = providers[self.provider]
+
+        if not settings.get("enabled", False):
+            raise Exception(
+                f"Proveedor '{self.provider}' deshabilitado."
+            )
+
+        self.client_id = settings["client_id"]
+        self.client_secret = settings["client_secret"]
 
     async def refresh_access_token(self):
 
@@ -30,9 +53,9 @@ class ZohoMail:
 
             "refresh_token": self.refresh_token,
 
-            "client_id": self.cuenta["client_id"],
+            "client_id": self.client_id,
 
-            "client_secret": self.cuenta["client_secret"],
+            "client_secret": self.client_secret,
 
             "grant_type": "refresh_token"
 
