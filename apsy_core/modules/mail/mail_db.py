@@ -13,9 +13,7 @@ class MailDB:
 				provider,
 				correo,
 				access_token,
-				refresh_token,
-				client_id,
-				client_secret
+				refresh_token
 			FROM oauth_sucursales
 			WHERE idtenant = %s
 			AND uso = 'SEND'
