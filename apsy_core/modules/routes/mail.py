@@ -34,7 +34,7 @@ async def code(request: Request):
 		mail = MailSender()
 
 		mail.send(
-			destino=correo,
+			destino=data["correo"],
 			asunto='Código de Solicitud de Instalación',
 			titulo='Código APSY',
 			mensaje=f'''
