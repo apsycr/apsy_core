@@ -254,6 +254,7 @@ def start_api(config):
     app.include_router(gateway.router, prefix=API_PREFIX)
     app.include_router(oauth.router, prefix=API_PREFIX)
     app.include_router(provision.router, prefix=API_PREFIX)
+    app.include_router(mail.router, prefix=API_PREFIX)
     app.include_router(device.router)
 
     # =====================================
