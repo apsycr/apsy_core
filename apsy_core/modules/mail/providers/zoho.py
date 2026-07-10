@@ -65,7 +65,7 @@ class ZohoMail:
             timeout=15
         )
 
-        result = response.json()
+        result = result.json()
 
         if "access_token" not in result:
 
