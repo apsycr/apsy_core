@@ -169,13 +169,12 @@ class ZohoMail:
 
 			context = ssl.create_default_context()
 
-
 			with smtplib.SMTP_SSL(
 				"smtp.zoho.com",
 				465,
 				context=context
 			) as smtp:
-
+				smtp.set_debuglevel(1)
 				smtp.ehlo()
 
 				auth_string = base64.b64encode(
@@ -183,8 +182,8 @@ class ZohoMail:
 				).decode("utf-8")
 
 				code, msg = smtp.docmd(
-					"AUTH",
-					"XOAUTH2 " + auth_string
+					"AUTH XOAUTH2",
+					auth_string
 				)
 
 				print(code)
