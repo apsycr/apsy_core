@@ -52,6 +52,33 @@ class MailDB:
 		idtenant=None,
 		minutos=10
 	):
+		existe = ejecutar_api(
+			"""
+			SELECT
+			    codigo,
+			    fecha_expira
+			FROM mail_codes
+			WHERE
+			    correo = ?
+			    AND tipo= ?
+			    AND estado = 1
+			    AND fecha_expira > NOW()
+			LIMIT 1
+			""",
+			(
+				correo,
+				tipo
+			),
+			'one')
+
+		if not existe == None:
+			 return {
+
+			    "codigo": existe["codigo"],
+			    "fecha_expira": existe["fecha_expira"],
+			    "nuevo": False
+
+			}
 
 		codigo = str(
 			random.randint(
@@ -111,7 +138,13 @@ class MailDB:
 			"none"
 		)
 
-		return codigo
+		return {
+
+		    "codigo": codigo,
+		    "fecha_expira": fecha_expira,
+		    "nuevo": True
+
+		}
 
 	# ==========================================
 	# VERIFY CODE

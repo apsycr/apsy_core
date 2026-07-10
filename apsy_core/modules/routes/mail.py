@@ -31,44 +31,55 @@ async def code(request: Request):
 			idtenant=data.get("idtenant",0)
 		)
 
-		mail = MailSender()
+		if codigo["nuevo"]:
 
-		await mail.send(
-			destino=data["correo"],
-			asunto='Código de Solicitud de Instalación',
-			titulo='Código APSY',
-			mensaje=f'''
-			<p>
-				Utilice el siguiente código para continuar
-				con la instalación del sistema.
-			</p>
+			mail = MailSender()
 
-			<div style="
-				text-align:center;
-				margin:30px 0;
-			">
-				<span style="
-					font-size:36px;
-					font-weight:bold;
-					color:#2563eb;
-					letter-spacing:4px;
+			await mail.send(
+				destino=data["correo"],
+				asunto='Código de Solicitud de Instalación',
+				titulo='Código APSY',
+				mensaje=f'''
+				<p>
+					Utilice el siguiente código para continuar
+					con la instalación del sistema.
+				</p>
+
+				<div style="
+					text-align:center;
+					margin:30px 0;
 				">
-					{codigo}
-				</span>
-			</div>
+					<span style="
+						font-size:36px;
+						font-weight:bold;
+						color:#2563eb;
+						letter-spacing:4px;
+					">
+						{codigo}
+					</span>
+				</div>
 
-			<p>
-				Este código expirará en 10 minutos.
-			</p>
-			'''
-		)
+				<p>
+					Este código expirará en 10 minutos.
+				</p>
+				'''
+			)
 
-		return JSONResponse({
+			return JSONResponse({
 
-			"ok": True,
+				"ok": True,
+				"nuevo": True,
+			    "fecha_expira": codigo["fecha_expira"]
+				
+			})
+		else:
+			return JSONResponse({
 
-			#"codigo": codigo  # temporal para pruebas
-		})
+			    "ok": True,
+			    "nuevo": False,
+			    "fecha_expira": codigo["fecha_expira"]
+
+			})
 
 	elif action == "verify":
 
