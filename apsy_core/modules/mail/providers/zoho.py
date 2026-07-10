@@ -106,7 +106,8 @@ class ZohoMail:
 	    html:str,
 	    cc:list=None,
 	    cco:list=None,
-	    adjuntos:list=None
+	    adjuntos:list=None,
+	    fromName:str='APSY'
 	):
 
 	    await self.ensure_valid_token()
@@ -122,6 +123,9 @@ class ZohoMail:
 
 	        "fromAddress":
 	            self.correo,
+
+	        "fromName": 
+	        	fromName,
 
 	        "toAddress":
 	            destino,
