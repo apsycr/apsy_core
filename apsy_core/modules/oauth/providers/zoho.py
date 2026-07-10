@@ -19,7 +19,7 @@ class ZohoProvider(ProviderBase):
             "openid",
             "email",
             "profile",
-            "ZohoMail.messages.READ",
+            "ZohoMail.accounts.READ",
             "ZohoMail.messages.CREATE"
         ],
         "READ": [
