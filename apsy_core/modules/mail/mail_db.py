@@ -6,7 +6,7 @@ from modules.db import ejecutar_api
 
 class MailDB:
 
-	def update_refresh(vid, access_token, token_expira):
+	def update_refresh(self,vid, access_token, token_expira):
 		ejecutar_api("""
 			UPDATE oauth_sucursales
 			SET
