@@ -20,6 +20,7 @@ class ZohoMail:
 		self.access_token = cuenta["access_token"]
 		self.refresh_token = cuenta["refresh_token"]
 		self.token_expira  = cuenta["token_expira"]
+		self.account_id = cuenta['oauth_uid']
 		self.load_config()
 		self.db = db
 
@@ -84,25 +85,84 @@ class ZohoMail:
 
 		return self.access_token
 
+	async def ensure_valid_token(self):
+
+	    if (
+	        not self.access_token
+	        or not self.token_expira
+	        or datetime.now() >= (
+	            self.token_expira -
+	            timedelta(minutes=5)
+	        )
+	    ):
+
+	        await self.refresh_access_token()
+
 
 	async def send(
-		self,
-		destino:str,
-		asunto:str,
-		html:str,
-		cc:list=None,
-		cco:list=None,
-		adjuntos:list=None
+	    self,
+	    destino:str,
+	    asunto:str,
+	    html:str,
+	    cc:list=None,
+	    cco:list=None,
+	    adjuntos:list=None
 	):
 
-		headers = {
-		    "Authorization": f"Zoho-oauthtoken {self.access_token}"
-		}
+	    await self.ensure_valid_token()
 
-		r = requests.get(
-		    "https://mail.zoho.com/api/accounts",
-		    headers=headers
-		)
+	    headers = {
 
-		print(r.json())
-		
+	        "Authorization":
+	            f"Zoho-oauthtoken {self.access_token}"
+
+	    }
+
+	    payload = {
+
+	        "fromAddress":
+	            self.correo,
+
+	        "toAddress":
+	            destino,
+
+	        "subject":
+	            asunto,
+
+	        "content":
+	            html,
+
+	        "mailFormat":
+	            "html"
+
+	    }
+
+	    if cc:
+
+	        payload["ccAddress"] = ",".join(cc)
+
+	    if cco:
+
+	        payload["bccAddress"] = ",".join(cco)
+
+	    response = requests.post(
+
+	        f"https://mail.zoho.com/api/accounts/{self.account_id}/messages",
+
+	        headers=headers,
+
+	        json=payload,
+
+	        timeout=30
+
+	    )
+
+	    result = response.json()
+
+	    if response.status_code not in (200, 201):
+
+	        raise Exception(
+	            f"Error enviando correo Zoho: {result}"
+	        )
+
+	    return result

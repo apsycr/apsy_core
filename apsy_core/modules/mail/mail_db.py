@@ -29,7 +29,8 @@ class MailDB:
 				correo,
 				access_token,
 				refresh_token,
-				token_expira
+				token_expira,
+				oauth_uid
 			FROM oauth_sucursales
 			WHERE idtenant = %s
 			AND (uso = 'SEND' or uso = 'BOTH')
