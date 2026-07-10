@@ -32,7 +32,7 @@ class MailDB:
 				token_expira
 			FROM oauth_sucursales
 			WHERE idtenant = %s
-			AND uso = 'SEND'
+			AND (uso = 'SEND' or uso = 'BOTH')
 			AND estado = 1
 			LIMIT 1
 			""",

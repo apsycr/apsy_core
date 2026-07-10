@@ -95,122 +95,14 @@ class ZohoMail:
 		adjuntos:list=None
 	):
 
-		if (
-			not self.access_token
-			or not self.token_expira
-			or datetime.now() >= (
-				self.token_expira - timedelta(minutes=5)
-			)
-		):
+		headers = {
+		    "Authorization": f"Zoho-oauthtoken {self.access_token}"
+		}
 
-			await self.refresh_access_token()
-
-		mensaje = EmailMessage()
-
-
-		mensaje["From"] = self.correo
-
-		mensaje["To"] = destino
-
-		mensaje["Subject"] = asunto
-
-
-		mensaje.set_content(
-			"Este correo requiere un cliente HTML."
+		r = requests.get(
+		    "https://mail.zoho.com/api/accounts",
+		    headers=headers
 		)
 
-
-		mensaje.add_alternative(
-			html,
-			subtype="html"
-		)
-
-		if adjuntos:
-
-			for archivo in adjuntos:
-
-				ruta = Path(archivo)
-
-				if not ruta.exists():
-					continue
-
-				mime_type, _ = mimetypes.guess_type(
-					str(ruta)
-				)
-
-				if mime_type:
-
-					maintype, subtype = mime_type.split(
-						'/',
-						1
-					)
-
-				else:
-
-					maintype = "application"
-					subtype = "octet-stream"
-
-				with open(ruta, "rb") as f:
-
-					mensaje.add_attachment(
-						f.read(),
-						maintype=maintype,
-						subtype=subtype,
-						filename=ruta.name
-					)
-
-		oauth_string = (
-			f"user={self.correo}\1"
-			f"auth=Bearer {self.access_token}\1"
-			"\1"
-		)
-
-		try:
-
-			context = ssl.create_default_context()
-
-			with smtplib.SMTP_SSL(
-				"smtp.zoho.com",
-				465,
-				context=context
-			) as smtp:
-				smtp.set_debuglevel(1)
-				smtp.ehlo()
-
-				auth_string = base64.b64encode(
-					oauth_string.encode("utf-8")
-				).decode("utf-8")
-
-				code, msg = smtp.docmd(
-					"AUTH XOAUTH2",
-					auth_string
-				)
-
-				print(code)
-				print(msg)
-
-				smtp.send_message(
-					mensaje
-				)
-
-
-			return {
-
-				"estado": True,
-
-				"mensaje": "Correo enviado correctamente"
-
-			}
-
-
-
-		except Exception as e:
-
-			# si falla por token expirado
-			# intentamos renovar
-
-			#await self.refresh_access_token()
-
-			raise Exception(
-				f"Error enviando correo Zoho: {e}"
-			)
+		print(r.json())
+		
