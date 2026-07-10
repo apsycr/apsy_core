@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from modules.mail.mail_sender import MailSender
 from modules.mail.mail_db import MailDB
 
-from datetime import datetim
+from datetime import datetime
 
 router = APIRouter(
 	prefix="/mail",
