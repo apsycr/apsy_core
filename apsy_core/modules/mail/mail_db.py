@@ -13,7 +13,7 @@ class MailDB:
 				access_token=?,
 				token_expira = DATE_ADD(
 					NOW(),
-					INTERVAL %s SECOND
+					INTERVAL ? SECOND
 				)
 			WHERE id=?
 			""",
