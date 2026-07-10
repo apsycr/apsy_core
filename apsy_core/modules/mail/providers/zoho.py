@@ -21,6 +21,7 @@ class ZohoMail:
         self.token_expira  = cuenta["token_expira"]
         self.load_config()
         self.db = db
+        self.provider = 'zoho'
 
     def load_config(self):
 
