@@ -34,7 +34,7 @@ async def code(request: Request):
 		segundos_restantes = int(
 
 		    (
-		        codigo_data["fecha_expira"]
+		        codigo["fecha_expira"]
 		        -
 		        datetime.now()
 		    ).total_seconds()
