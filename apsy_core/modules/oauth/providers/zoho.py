@@ -141,13 +141,52 @@ class ZohoProvider(ProviderBase):
             options={"verify_signature": False}
         )
 
+        headers = {
+
+            "Authorization":
+                f"Zoho-oauthtoken {access_token}"
+
+        }
+
+        response = requests.get(
+
+            "https://mail.zoho.com/api/accounts",
+
+            headers=headers,
+
+            timeout=15
+
+        )
+
+        mail_data = response.json()
+
+        account_id = None
+
+        if (
+            mail_data.get("status", {})
+            .get("code") == 200
+        ):
+
+            cuentas = mail_data.get("data", [])
+
+            if cuentas:
+
+                account_id = cuentas[0].get(
+                    "accountId"
+                )
+        oauth_uid = (
+            account_id
+            if account_id
+            else userinfo.get("sub")
+        )
+
         return {
 
             "ok": True,
 
             "provider": self.provider,
 
-            "oauth_uid": userinfo.get("sub"),
+            "oauth_uid": account_id,
 
             "correo": userinfo.get("email"),
 
