@@ -10,8 +10,11 @@ class MailDB:
 		ejecutar_api("""
 			UPDATE oauth_sucursales
 			SET
-			    access_token=?,
-			    token_expira=?
+				access_token=?,
+				token_expira = DATE_ADD(
+					NOW(),
+					INTERVAL %s SECOND
+				)
 			WHERE id=?
 			""",
 			(access_token, token_expira, vid),
