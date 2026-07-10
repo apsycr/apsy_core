@@ -1,4 +1,4 @@
-from modules.config import load_confi
+from modules.config import load_config
 from datetime import datetime, timedelta
 from pathlib import Path
 from email.message import EmailMessage
