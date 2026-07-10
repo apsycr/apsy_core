@@ -31,6 +31,16 @@ async def code(request: Request):
 			idtenant=data.get("idtenant",0)
 		)
 
+		segundos_restantes = int(
+
+		    (
+		        codigo_data["fecha_expira"]
+		        -
+		        datetime.now()
+		    ).total_seconds()
+
+		)
+
 		if codigo["nuevo"]:
 
 			mail = MailSender()
@@ -65,21 +75,13 @@ async def code(request: Request):
 				'''
 			)
 
-			return JSONResponse({
+		return JSONResponse({
 
-				"ok": True,
-				"nuevo": True,
-			    "fecha_expira": codigo["fecha_expira"]
-				
-			})
-		else:
-			return JSONResponse({
+		    "ok": True,
+		    "nuevo": codigo['nuevo'],
+		    "fecha_expira": segundos_restantes
 
-			    "ok": True,
-			    "nuevo": False,
-			    "fecha_expira": codigo["fecha_expira"]
-
-			})
+		})
 
 	elif action == "verify":
 
