@@ -176,6 +176,8 @@ class ZohoMail:
 				context=context
 			) as smtp:
 
+				smtp.ehlo()
+
 				auth_string = base64.b64encode(
 					oauth_string.encode("utf-8")
 				).decode("utf-8")
