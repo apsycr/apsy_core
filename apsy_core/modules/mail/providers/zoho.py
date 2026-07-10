@@ -21,7 +21,6 @@ class ZohoMail:
         self.token_expira  = cuenta["token_expira"]
         self.load_config()
         self.db = db
-        self.provider = 'zoho'
 
     def load_config(self):
 
@@ -29,16 +28,11 @@ class ZohoMail:
 
         providers = cfg.get("oauth", {}).get("providers", {})
 
-        if self.provider not in providers:
-            raise Exception(
-                f"Proveedor '{self.provider}' no encontrado en configuracion"
-            )
-
-        settings = providers[self.provider]
+        settings = providers['zoho']
 
         if not settings.get("enabled", False):
             raise Exception(
-                f"Proveedor '{self.provider}' deshabilitado."
+                f"Proveedor zoho deshabilitado."
             )
 
         self.client_id = settings["client_id"]
