@@ -18,7 +18,7 @@ class ZohoMail:
         self.correo = cuenta["correo"]
         self.access_token = cuenta["access_token"]
         self.refresh_token = cuenta["refresh_token"]
-        self.token_expira  = cuenta[""]
+        self.token_expira  = cuenta["token_expira"]
         self.load_config()
         self.db = db
 
