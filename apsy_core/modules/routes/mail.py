@@ -106,3 +106,78 @@ async def code(request: Request):
 		"error": "Acción inválida"
 
 	})
+
+from modules.mail.providers.smtp import SMTPMail
+
+@router.post("/mail/smtp_register")
+async def smtp_register(request: Request):
+
+    data = await request.json()
+
+    host = data.get("host", "").strip()
+    puerto = int(data.get("puerto", 587))
+    usuario = data.get("usuario", "").strip()
+    password = data.get("password", "").strip()
+    seguridad = data.get("seguridad", "TLS")
+    auth_type = data.get("auth_type", "PASSWORD")
+    remitente_nombre = data.get("remitente_nombre", "").strip()
+    uso = data.get("uso", "SEND")
+    idtenant = data.get(idtenant,'')
+
+    #idtenant = request.state.idtenant
+
+    if not host:
+        raise Exception(
+            "Debe indicar el servidor SMTP"
+        )
+
+    if not usuario:
+        raise Exception(
+            "Debe indicar el usuario SMTP"
+        )
+
+    if not password:
+        raise Exception(
+            "Debe indicar la contraseña"
+        )
+
+    if idtenant == '':
+        raise Exception(
+            "Tenant incorrecto"
+        )
+
+    # cuenta = {
+
+    #     "host": host,
+    #     "puerto": puerto,
+    #     "seguridad": seguridad,
+    #     "usuario": usuario,
+    #     "password": password,
+    #     "auth_type": auth_type,
+    #     "remitente_nombre": remitente_nombre
+
+    # }
+
+    # smtp = SMTPMail(cuenta)
+
+    # #
+    # # Validar conexión
+    # #
+    # smtp.test_connection()
+
+    db.save_smpt(
+        idtenant,
+        host,
+        puerto,
+        seguridad,
+        usuario,
+        password,
+        auth_type,
+        remitente_nombre,
+        uso
+    )
+
+    return {
+        "success": True,
+        "message": "Cuenta SMTP registrada correctamente"
+    }

@@ -5,69 +5,75 @@ from datetime import datetime
 
 class MailSender:
 
-    def __init__(self):
+	def __init__(self):
 
-        self.db = MailDB()
+		self.db = MailDB()
 
-    async def send(
-        self,
-        destino,
-        asunto,
-        titulo,
-        mensaje,
-        boton_texto=None,
-        boton_url=None,
-        adjuntos:list = None,
-        cc:list = None,
-        cco:list = None,
-        idtenant=0
-    ):
+	async def send(
+		self,
+		destino,
+		asunto,
+		titulo,
+		mensaje,
+		boton_texto=None,
+		boton_url=None,
+		adjuntos:list = None,
+		cc:list = None,
+		cco:list = None,
+		idtenant=0
+	):
 
-        cuenta = self.db.get_account(idtenant)
+		cuenta = self.db.get_account(idtenant)
 
-        if not cuenta:
+		if not cuenta:
 
-            raise Exception(
-                "No existe una cuenta configurada para envío de correo"
-            )
+			raise Exception(
+				"No existe una cuenta configurada para envío de correo"
+			)
 
 
-        html = render_template(
-            titulo,
-            mensaje,
-            boton_texto,
-            boton_url
-        )
+		html = render_template(
+			titulo,
+			mensaje,
+			boton_texto,
+			boton_url
+		)
 
-        provider = cuenta["provider"]
+		provider = cuenta["provider"]
 
-        if provider=="google":
-            print(123)
-            #from modules.mail.providers.google import GoogleMail
+		if provider=="google":
+			print(123)
+			#from modules.mail.providers.google import GoogleMail
 
-            #mail = GoogleMail(cuenta)
+			#mail = GoogleMail(cuenta)
 
-        elif provider=="zoho":
+		elif provider=="zoho":
 
-            from modules.mail.providers.zoho import ZohoMail
+			from modules.mail.providers.zoho import ZohoMail
 
-            mail = ZohoMail(cuenta,self.db)
+			mail = ZohoMail(cuenta,self.db)
 
-        elif provider=="microsoft":
-            print(123)
-            #from modules.mail.providers.microsoft import MicrosoftMail
+		elif provider=="microsoft":
+			print(123)
+			#from modules.mail.providers.microsoft import MicrosoftMail
 
-            #mail = MicrosoftMail(cuenta)
+			#mail = MicrosoftMail(cuenta)
 
-        else:
+		elif provider=="smtp":
 
-            raise Exception(
-                f"Proveedor no soportado {provider}"
-            )
+			from modules.mail.providers.smtp import SMTPMail
 
-        return await mail.send(
-            destino=destino,
-            asunto=asunto,
-            html=html,
-            adjuntos=adjuntos
-        )
+			mail = SMTPMail(cuenta)
+
+		else:
+
+			raise Exception(
+				f"Proveedor no soportado {provider}"
+			)
+
+		return await mail.send(
+			destino=destino,
+			asunto=asunto,
+			html=html,
+			adjuntos=adjuntos
+		)

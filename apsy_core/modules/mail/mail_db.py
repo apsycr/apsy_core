@@ -6,6 +6,60 @@ from modules.db import ejecutar_api
 
 class MailDB:
 
+	def save_smtp(self,idtenant,
+            host,
+            puerto,
+            seguridad,
+            usuario,
+            password,
+            auth_type,
+            remitente_nombre,
+            uso):
+
+		ejecutar_api(
+		"""
+        INSERT INTO smtp_sucursales (
+
+            idtenant,
+            host,
+            puerto,
+            seguridad,
+            usuario,
+            password,
+            auth_type,
+            remitente_nombre,
+            uso,
+            estado
+
+        ) VALUES (
+
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            %s,
+            1
+
+        )
+        """,
+        (
+            idtenant,
+            host,
+            puerto,
+            seguridad,
+            usuario,
+            password,
+            auth_type,
+            remitente_nombre,
+            uso
+        ),
+        'none'
+        )
+
 	def update_refresh(self,vid, access_token, token_expira):
 		ejecutar_api("""
 			UPDATE oauth_sucursales
@@ -20,25 +74,51 @@ class MailDB:
 			(access_token, token_expira, vid),
 			'none')
 
-	def get_account(self,idtenant = 0):
-		return ejecutar_api(
-			"""
-			SELECT
-				id, 
-				provider,
-				correo,
-				access_token,
-				refresh_token,
-				token_expira,
-				oauth_uid
-			FROM oauth_sucursales
-			WHERE idtenant = %s
-			AND (uso = 'SEND' or uso = 'BOTH')
-			AND estado = 1
-			LIMIT 1
-			""",
-			(idtenant,),
-			"one")
+	def get_account(self, idtenant=0):
+
+	    cuenta = ejecutar_api(
+	        """
+	        SELECT
+	            id,
+	            provider,
+	            correo,
+	            access_token,
+	            refresh_token,
+	            token_expira,
+	            oauth_uid
+	        FROM oauth_sucursales
+	        WHERE idtenant = %s
+	        AND (uso = 'SEND' OR uso = 'BOTH')
+	        AND estado = 1
+	        LIMIT 1
+	        """,
+	        (idtenant,),
+	        "one"
+	    )
+
+	    if cuenta:
+	        return cuenta
+
+	    return ejecutar_api(
+	        """
+	        SELECT
+	            id,
+	            'smtp' AS provider,
+	            host,
+	            puerto,
+	            seguridad,
+	            usuario,
+	            password,
+	            auth_type,
+	            remitente_nombre
+	        FROM smtp_sucursales
+	        WHERE idtenant = %s
+	        AND estado = 1
+	        LIMIT 1
+	        """,
+	        (idtenant,),
+	        "one"
+	    )
 
 	# ==========================================
 	# GENERATE CODE

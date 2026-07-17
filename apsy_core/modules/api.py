@@ -99,6 +99,7 @@ def start_api(config):
             "/auth/refresh",
             "/auth/code",
             "/mail/code",
+            "/mail/smtp_register",
             "/oauth/",
             "/sync/",
             "/provision/",
