@@ -165,7 +165,7 @@ async def smtp_register(request: Request):
     # #
     # smtp.test_connection()
 
-    db.save_smpt(
+    db.save_smtp(
         idtenant,
         host,
         puerto,
