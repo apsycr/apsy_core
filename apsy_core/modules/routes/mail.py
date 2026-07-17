@@ -109,7 +109,7 @@ async def code(request: Request):
 
 from modules.mail.providers.smtp import SMTPMail
 
-@router.post("/mail/smtp_register")
+@router.post("/smtp_register")
 async def smtp_register(request: Request):
 
     data = await request.json()
