@@ -122,7 +122,7 @@ async def smtp_register(request: Request):
     auth_type = data.get("auth_type", "PASSWORD")
     remitente_nombre = data.get("remitente_nombre", "").strip()
     uso = data.get("uso", "SEND")
-    idtenant = data.get(idtenant,'')
+    idtenant = data.get("idtenant",'')
 
     #idtenant = request.state.idtenant
 
