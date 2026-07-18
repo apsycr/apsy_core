@@ -67,7 +67,7 @@ async def code(request: Request):
 						color:#2563eb;
 						letter-spacing:4px;
 					">
-						{codigo}
+						{codigo['codigo']}
 					</span>
 				</div>
 
