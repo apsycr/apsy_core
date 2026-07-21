@@ -103,7 +103,8 @@ def start_api(config):
             "/oauth/",
             "/sync/",
             "/provision/",
-            "/download/"
+            "/download/",
+            "/install/status"
         ]
 
         if any(path.startswith(p) for p in public_paths):

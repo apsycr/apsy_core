@@ -13,7 +13,9 @@ from modules.services.provisions import (
 	get_tenant_by_device,
 	get_updates,
 	get_latest_version,
-	get_install_credentials
+	get_install_credentials,
+	register_install,
+	validate_install,
 )
 
 import secrets
@@ -83,6 +85,8 @@ async def device(request: Request):
 		body["fingerprint"]
 	)
 
+	install_token = None
+
 	if mode == "existing_terminal":
 
 		tenant_id = onboarding["empresa_id"]
@@ -120,6 +124,10 @@ async def device(request: Request):
 
 		assign_trial_plan(tenant_id)
 
+		install_token = register_install(
+		    tenant_id
+		)
+
 		crm_state = "new_customer"
 
 
@@ -127,9 +135,33 @@ async def device(request: Request):
 
 		"ok": True,
 
-		"credentials": get_install_credentials()
+		"credentials": get_install_credentials(),
+
+		"state": crm_state,
+
+		"idtenant": tenant_id,
+
+		"token" : install_token
 
 	}
+
+
+@router.post(
+    "/install_validate"
+)
+async def install_validate(
+    request: Request
+):
+
+    token = request.headers.get(
+        "Authorization",
+        ""
+    ).replace(
+        "Bearer ",
+        ""
+    )
+
+    return validate_install(token)
 
 
 @router.post("/update")

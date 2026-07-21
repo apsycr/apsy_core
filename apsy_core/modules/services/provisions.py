@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from modules.db import ejecutar_api
+from modules.services.state import State
 
 def normalize_version(v):
 
@@ -158,6 +159,98 @@ def get_updates(client_version):
             continue
 
     return updates
+
+def validate_install(token):
+    install = ejecutar_api(
+
+        """
+
+        SELECT
+            id,
+            idtenant,
+            estado
+
+        FROM crm_installs
+
+        WHERE token=%s
+
+        LIMIT 1
+
+        """,
+        (token,),
+        "one"
+    )
+
+    if not install:
+
+        return {
+
+            "ok": False,
+
+            "msg":
+                "invalid install"
+
+        }
+
+    State.change(
+
+        table="crm_installs",
+
+        where="token=%s",
+
+        params=(token,),
+
+        estado="VALIDADO",
+
+        motivo="Correo validado",
+
+        idtenant=install[
+            "idtenant"
+        ]
+
+    )
+
+    return {
+
+        "ok": True
+
+    }    
+
+def register_install(idtenant):
+
+    token = secrets.token_urlsafe(64)
+
+    sql = """
+
+        INSERT INTO crm_installs (
+
+            idtenant,
+            token,
+            estado
+
+        )
+
+        VALUES (
+
+            %s,
+            %s,
+            'CONFIGURANDO'
+
+        )
+
+    """
+
+    ejecutar_api(
+        sql,
+        (
+            idtenant,
+            token
+        ),
+        "none"
+    )
+
+
+    return token
 
 def create_session(fingerprint, hostname, ip, token, expires):
 
@@ -315,7 +408,7 @@ def register_terminal(empresa_id, data):
 
         data.get("fingerprint",""),
 
-        data.get("tipo","pos"),
+        data.get("tipo","server"),
 
         data.get("version","1.0.0")
 
