@@ -141,7 +141,14 @@ async def device(request: Request):
 
 		"idtenant": tenant_id,
 
-		"token" : install_token
+		"token" : install_token,
+
+		"git" : {
+			"user" : "apsycr",
+			"token" : "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",
+			"git" : "apsycr",
+			"repo" : "provision"
+		}
 
 	}
 
