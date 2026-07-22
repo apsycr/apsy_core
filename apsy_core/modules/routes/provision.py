@@ -148,6 +148,11 @@ async def device(request: Request):
 			"token" : "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",
 			"git" : "apsycr",
 			"repo" : "provision"
+		},
+
+		"ghcr": {
+			"user": "apsycr",
+			"token": "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"
 		}
 
 	}
