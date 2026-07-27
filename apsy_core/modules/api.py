@@ -6,7 +6,7 @@ import uvicorn
 import logging
 import secrets
 
-from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision, mail
+from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision, mail, install
 from modules.ws.router import router as ws_router
 from modules.db import ejecutar_api, ejecutar
 
