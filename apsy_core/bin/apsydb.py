@@ -5,7 +5,9 @@ import argparse
 import subprocess
 import re
 import shutil
+import json
 
+from pathlib import Path
 from datetime import datetime
 
 # =====================================
@@ -16,10 +18,12 @@ BASE_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )
 
-CONFIG_FILE = os.path.join(
-    BASE_DIR,
-    "apsydb.json"
-)
+# CONFIG_FILE = os.path.join(
+#     BASE_DIR,
+#     "apsydb.json"
+# )
+
+CONFIG_FILE = Path(__file__).parent / "apsydb.json"
 
 # =====================================
 # LOAD CONFIG

@@ -59,6 +59,7 @@ services:
       - ${APSY_DATA}/config:/config
       - ${APSY_DATA}/logs:/logs
       - ${APSY_DATA}/uploads:/uploads
+      - ${APSY_DATA}/releases:/releases
 
     depends_on:
       mariadb:

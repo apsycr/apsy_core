@@ -6,7 +6,7 @@ import uvicorn
 import logging
 import secrets
 
-from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision, mail, install
+from modules.routes import auth, site, sync, proc, core, internal, device, gateway, oauth, provision, mail, install, releases
 from modules.ws.router import router as ws_router
 from modules.db import ejecutar_api, ejecutar
 
@@ -104,7 +104,8 @@ def start_api(config):
             "/sync/",
             "/provision/",
             "/download/",
-            "/install/status"
+            "/install/status",
+            "/releases/"
         ]
 
         if any(path.startswith(p) for p in public_paths):
@@ -270,6 +271,7 @@ def start_api(config):
     app.include_router(oauth.router, prefix=API_PREFIX)
     app.include_router(provision.router, prefix=API_PREFIX)
     app.include_router(mail.router, prefix=API_PREFIX)
+    app.include_router(releases.router, prefix=API_PREFIX)
     app.include_router(device.router)
 
     # =====================================

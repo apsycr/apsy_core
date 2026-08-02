@@ -23,7 +23,7 @@ class db_install:
 			"one"
 		)
 
-		if result == None
+		if result == None:
 			return None
 
 		return{
@@ -76,7 +76,7 @@ class db_install:
 			""",
 			(	
 				tenant,
-			)
+			),
 			"one")
 
 		if not result:

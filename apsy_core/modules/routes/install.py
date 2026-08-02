@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from modules.services.install import db_install
+from modules.services.db_install import db_install
 from modules.services.audit import Audit
 
 router = APIRouter(
