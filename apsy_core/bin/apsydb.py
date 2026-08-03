@@ -500,7 +500,7 @@ def shell():
 
             "-u", MYSQL_USER,
             f"-p{MYSQL_PASSWORD}",
-            f"{MYSQL_DATABASE}"
+            f"{MYSQL_DATABASE}",
             "-A"
         ]
 

@@ -4,43 +4,66 @@ from modules.services.db_install import db_install
 from modules.services.db_release import db_release
 from modules.services.audit import Audit
 
-from pathlib import Path
+import json
 import base64
+from pathlib import Path
 
 
 def build_release_package(
-    tipo,
-    version
+	tipo,
+	version
 ):
 
-    root = Path(
-        f"/releases/{tipo}/{version}"
-    )
+	root = Path(
+		f"/releases/{tipo}/{version}"
+	)
 
-    files = []
+	manifest_file = root / "manifest.json"
 
-    if not root.exists():
-        return files
+	if not root.exists():
+		return []
 
-    for file in root.iterdir():
+	if not manifest_file.exists():
+		raise Exception(
+			f"Manifest not found: {manifest_file}"
+		)
 
-        if not file.is_file():
-            continue
+	with open(
+		manifest_file,
+		"r",
+		encoding="utf-8"
+	) as f:
 
-        with open(
-            file,
-            "rb"
-        ) as f:
+		manifest = json.load(f)
 
-            files.append({
-                "name": file.name,
-                "size": file.stat().st_size,
-                "content": base64.b64encode(
-                    f.read()
-                ).decode("utf-8")
-            })
+	files = []
 
-    return files
+	for filename in manifest.get(
+		"files",
+		[]
+	):
+
+		file = root / filename
+
+		if not file.exists():
+			raise Exception(
+				f"File not found: {filename}"
+			)
+
+		with open(
+			file,
+			"rb"
+		) as content:
+
+			files.append({
+				"name": filename,
+				"size": file.stat().st_size,
+				"content": base64.b64encode(
+					content.read()
+				).decode("utf-8")
+			})
+
+	return files
 
 router = APIRouter(
 	prefix="/releases",
@@ -114,9 +137,9 @@ async def last(request: Request):
 		for release in releases:
 
 			release["files"] = build_release_package(
-		        release["tipo"],
-		        release["version"]
-		    )
+				release["tipo"],
+				release["version"]
+			)
 
 			db_release.audit_create(
 				terminal["id"],
