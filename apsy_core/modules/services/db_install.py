@@ -27,9 +27,9 @@ class db_install:
 			return None
 
 		return{
-			"id"    : result.id,
-			"tenant": result.idtenant,
-			"estado": result.estado
+			"id"    : result['id'],
+			"tenant": result['idtenant'],
+			"estado": result['estado']
 
 		}
 
