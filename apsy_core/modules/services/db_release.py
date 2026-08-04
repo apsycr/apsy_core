@@ -69,7 +69,8 @@ class db_release:
 				idtenant,
 				installation_token,
 				fingerprint
-			)
+			),
+			"none"
 		)
 
 		result = ejecutar_api(
@@ -205,5 +206,6 @@ class db_release:
 			(
 				idcrm_release_terminal,
 				idrelease
-			)
+			),
+			"none"
 		)
