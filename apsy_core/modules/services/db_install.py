@@ -13,7 +13,7 @@ class db_install:
 				id,
 				idtenant,
 				estado
-			FROM crm_install
+			FROM crm_installs
 			WHERE token = %s
 			LIMIT 1
 			""",
