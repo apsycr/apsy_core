@@ -190,7 +190,7 @@ class db_release:
 			"""
 			INSERT INTO crm_audit_release
 			(
-				idcrm_release_terminal,
+				idcrm_release,
 				idrelease,
 				estado
 			)
