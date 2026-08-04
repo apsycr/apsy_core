@@ -132,16 +132,11 @@ async def last(request: Request):
 
 		if not terminal:
 
-			# terminal = db_release.terminal_create(
-			# 	install["tenant"],
-			# 	installation_token,
-			# 	fingerprint
-			# )
-
-			return {
-				"success": False,
-				"message": "Invalid Terminal"
-			}
+			terminal = db_release.terminal_create(
+				install["tenant"],
+				installation_token,
+				fingerprint
+			)
 
 		releases = db_release.pending_releases(
 			terminal["id_dbversion"],
