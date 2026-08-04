@@ -172,11 +172,10 @@ class db_release:
 		for row in result:
 
 			releases.append({
-				"id": row.id,
-				"tipo": row.tipo,
-				"version": row.version,
-				"descripcion": row.descripcion,
-				"path": row.path
+				"id": row['id'],
+				"tipo": row['tipo'],
+				"version": row['version'],
+				"descripcion": row['descripcion'],
 			})
 
 		return releases
