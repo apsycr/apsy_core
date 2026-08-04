@@ -77,26 +77,26 @@ async def last(request: Request):
 	try:
 
 		auth = request.headers.get(
-	        "Authorization",
-	        ""
-	    )
+			"Authorization",
+			""
+		)
 
-	    if not auth.startswith(
-	        "Bearer "
-	    ):
+		if not auth.startswith(
+			"Bearer "
+		):
 
-	        return {
+			return {
 
-	            "ok": False,
+				"ok": False,
 
-	            "msg": "Authorization requerido"
+				"msg": "Authorization requerido"
 
-	        }
+			}
 
-	    installation_token = auth.replace(
-	        "Bearer ",
-	        ""
-	    ).strip()
+		installation_token = auth.replace(
+			"Bearer ",
+			""
+		).strip()
 
 		fingerprint = request.headers.get("X-finger")
 
