@@ -152,8 +152,7 @@ class db_release:
 				id,
 				tipo,
 				version,
-				descripcion,
-				path
+				descripcion
 			FROM crm_release
 			WHERE
 				{' OR '.join(where)}
