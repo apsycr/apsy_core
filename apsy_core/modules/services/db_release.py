@@ -35,12 +35,12 @@ class db_release:
 			return None
 
 		return {
-			"id": result.id,
-			"tenant": result.idtenant,
-			"installation_token": result.installation_token,
-			"fingerprint": result.fingerprint,
-			"id_dbversion": result.id_dbversion,
-			"id_erpversion": result.id_erpversion
+			"id": result['id'],
+			"tenant": result['idtenant'],
+			"installation_token": result['installation_token'],
+			"fingerprint": result['fingerprint'],
+			"id_dbversion": result['id_dbversion'],
+			"id_erpversion": result['id_erpversion']
 		}
 
 	@staticmethod
@@ -96,12 +96,12 @@ class db_release:
 		)
 
 		return {
-			"id": result.id,
-			"tenant": result.idtenant,
-			"installation_token": result.installation_token,
-			"fingerprint": result.fingerprint,
-			"id_dbversion": result.id_dbversion,
-			"id_erpversion": result.id_erpversion
+			"id": result['id'],
+			"tenant": result['idtenant'],
+			"installation_token": result['installation_token'],
+			"fingerprint": result['fingerprint'],
+			"id_dbversion": result['id_dbversion'],
+			"id_erpversion": result['id_erpversion']
 		}
 
 	@staticmethod
