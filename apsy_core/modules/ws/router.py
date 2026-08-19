@@ -1,8 +1,10 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from modules.services.mirror_manager import mirror_manager
+
 import logging
 
 from modules.ws.manager import ws_connect
+from modules.ws.local_manager import local_ws_manager
 
 logger = logging.getLogger("ws-cloud")
 
@@ -54,3 +56,36 @@ async def websocket_entry(websocket: WebSocket):
             pass
 
         await websocket.close()
+
+@router.websocket("/local/connect")
+async def websocket_local(websocket: WebSocket):
+
+    await websocket.accept()
+
+    try:
+
+        await local_ws_manager.connect(
+            websocket
+        )
+
+        while True:
+            data = await websocket.receive_json()
+            
+            await local_ws_manager.handle(
+                websocket,
+                data
+            )
+
+    except WebSocketDisconnect:
+
+        await local_ws_manager.disconnect(
+            websocket
+        )
+
+    except Exception:
+
+        await local_ws_manager.disconnect(
+            websocket
+        )
+
+        raise

@@ -14,9 +14,17 @@ def build_release_package(
 	version
 ):
 
-	root = Path(
-		f"/releases/{tipo}/{version}"
-	)
+	if tipo == "TOOLS":
+
+		root = Path(
+			"/releases/TOOLS"
+		)
+
+	else:
+
+		root = Path(
+			f"/releases/{tipo}/{version}"
+		)
 
 	manifest_file = root / "manifest.json"
 
@@ -140,7 +148,8 @@ async def last(request: Request):
 
 		releases = db_release.pending_releases(
 			terminal["id_dbversion"],
-			terminal["id_erpversion"]
+			terminal["id_erpversion"],
+			terminal["id_toolsversion"]
 		)
 
 		for release in releases:

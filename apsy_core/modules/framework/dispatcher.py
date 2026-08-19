@@ -5,6 +5,8 @@ from modules.framework.query_service  import ejecutar_query
 from modules.db import ejecutar_api
 
 MODULE_CACHE = {}
+# CREAR CACHE PARA LA TABLA core_queries, core_procedures ORIENTADO AL NOMBRE DEL MODULO
+
 # =========================
 # 🔹 HELPERS BASE
 # =========================

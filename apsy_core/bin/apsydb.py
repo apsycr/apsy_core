@@ -101,23 +101,37 @@ parser.add_argument(
     default="docker"
 )
 
+parser.add_argument(
+    "--no-display",
+    action="store_true"
+)
+
 args = parser.parse_args()
+
+# =====================================
+# CODIGOS
+# =====================================
+
+PROCESS_COMPLETE = 0
+RESTORE_ERROR    = 1
 
 # =====================================
 # VARIABLES
 # =====================================
 
-MYSQL_USER = args.user
+MYSQL_USER      = args.user
 
-MYSQL_PASSWORD = args.password
+MYSQL_PASSWORD  = args.password
 
-MYSQL_DATABASE = args.database
+MYSQL_DATABASE  = args.database
 
-MYSQL_PORT = args.port
+MYSQL_PORT      = args.port
 
-MYSQL_HOST = args.host
+MYSQL_HOST      = args.host
 
-MODE = args.location
+MODE            = args.location
+
+NO_DISPLAY      = args.no_display
 
 CONTAINER = CONFIG.get(
     "container",
@@ -166,9 +180,10 @@ def clean_sql_file(file_path):
         backup_file
     )
 
-    print(f"\n🛡 Backup original:\n{backup_file}")
+    if not NO_DISPLAY:
+         print(f"\n{'🛡' if not NO_DISPLAY else ''} Backup original:\n{backup_file}")
 
-    print("\n🧹 Limpiando dump...\n")
+         print(f"\n{'🧹' if not NO_DISPLAY else ''} Limpiando dump...\n")
 
     # with open(file_path, "r", encoding="utf-8") as f:
 
@@ -272,7 +287,7 @@ SET collation_connection = 'utf8mb4_unicode_ci';
 
         f.write(sql)
 
-    print("✅ Dump limpio y convertido a utf8mb4_unicode_ci")
+    print(f"\n{'✅' if not NO_DISPLAY else ''} Dump limpio y convertido a utf8mb4_unicode_ci")
 
 # =====================================
 # BACKUP
@@ -362,8 +377,7 @@ def backup():
         )
 
     if result.returncode != 0:
-
-        print("\n❌ Error creando backup")
+        print(f"\n{'❌' if not NO_DISPLAY else ''} Error creando backup")
 
         return
 
@@ -372,8 +386,8 @@ def backup():
     # =================================
 
     clean_sql_file(file)
-
-    print(f"\n✅ Backup creado:\n{file}")
+    
+    print(f"\n{'✅' if not NO_DISPLAY else ''} Backup creado:\n{file}")
 
 # =====================================
 # CLEAN
@@ -382,20 +396,18 @@ def backup():
 def clean(file):
 
     if not file:
-
-        print("\n❌ Debe indicar archivo")
+        print(f"\n{'❌' if not NO_DISPLAY else ''} Debe indicar archivo")
 
         return
 
     if not os.path.exists(file):
-
-        print("\n❌ Archivo no existe")
+        print(f"\n{'❌' if not NO_DISPLAY else ''} Archivo no existe")
 
         return
 
     clean_sql_file(file)
 
-    print("\n✅ Archivo limpiado")
+    print(f"\n{'✅' if not NO_DISPLAY else ''} Archivo limpiado")
 
 # =====================================
 # RESTORE
@@ -405,13 +417,13 @@ def restore(file):
 
     if not file:
 
-        print("\n❌ Debe indicar archivo")
+        print(f"\n{'❌' if not NO_DISPLAY else ''} Debe indicar archivo")
 
         return
 
     if not os.path.exists(file):
 
-        print("\n❌ Archivo no existe")
+        print(f"\n{'❌' if not NO_DISPLAY else ''} Archivo no existe")
 
         return
 
@@ -470,11 +482,16 @@ def restore(file):
 
     if result.returncode == 0:
 
-        print("\n✅ Restore completado")
+        if not NO_DISPLAY: 
+            print("\n✅ Restore completado")
+        
+        return PROCESS_COMPLETE
 
     else:
-
-        print("\n❌ Error en restore")
+        if not NO_DISPLAY:
+            print("\n❌ Error en restore")
+        
+        return RESTORE_ERROR 
 
 # =====================================
 # SHELL

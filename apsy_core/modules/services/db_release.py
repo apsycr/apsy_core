@@ -17,7 +17,8 @@ class db_release:
 				installation_token,
 				fingerprint,
 				id_dbversion,
-				id_erpversion
+				id_erpversion,
+				id_toolsversion
 			FROM crm_release_terminal
 			WHERE
 				idtenant = %s
@@ -40,7 +41,8 @@ class db_release:
 			"installation_token": result['installation_token'],
 			"fingerprint": result['fingerprint'],
 			"id_dbversion": result['id_dbversion'],
-			"id_erpversion": result['id_erpversion']
+			"id_erpversion": result['id_erpversion'],
+			"id_toolsversion": result['id_toolsversion']
 		}
 
 	@staticmethod
@@ -107,7 +109,8 @@ class db_release:
 	@staticmethod
 	def pending_releases(
 		id_dbversion=None,
-		id_erpversion=None
+		id_erpversion=None,
+		id_toolsversion=None
 	):
 
 		where = []
@@ -144,6 +147,22 @@ class db_release:
 
 			where.append(
 				"tipo = 'ERP'"
+			)
+
+		if id_toolsversion:
+
+			where.append(
+				"(tipo = 'TOOLS' AND id > %s)"
+			)
+
+			params.append(
+				id_toolsversion
+			)
+
+		else:
+
+			where.append(
+				"tipo = 'TOOLS'"
 			)
 
 		result = ejecutar_api(
