@@ -2,5 +2,5 @@
     "host": "localhost",
     "port": 3306,
     "container": "apsy_mariadb",
-    "backup_dir": "C:/ProgramData/apsy/backups"
+    "backup_dir": "C:/apsy_data/backups"
 }

@@ -23,7 +23,9 @@ BASE_DIR = os.path.dirname(
 #     "apsydb.json"
 # )
 
-CONFIG_FILE = Path(__file__).parent / "apsydb.json"
+CONFIG_FILE = Path(
+    r"C:\apsy_data\config\apsydb.json"
+)
 
 # =====================================
 # LOAD CONFIG
@@ -32,9 +34,8 @@ CONFIG_FILE = Path(__file__).parent / "apsydb.json"
 DEFAULT_CONFIG = {
     "host": "localhost",
     "port": 3306,
-    "user": "root",
-    "container": "apsy_mariadb",
-    "backup_dir": "C:/apsy_data/backups"
+    "container": "apsy_prod_mariadb",
+    "backup_dir": "C:/apsy_empresa/backups"
 }
 
 if os.path.exists(CONFIG_FILE):
@@ -55,7 +56,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument(
     "action",
-    choices=["backup", "restore", "shell", "clean"]
+    choices=["backup", "restore", "shell", "clean", "info"]
 )
 
 parser.add_argument(
@@ -560,3 +561,19 @@ elif args.action == "shell":
 elif args.action == "clean":
 
     clean(args.file)
+
+elif args.action == "info":
+
+    print(
+        "\nAPSY DB"
+        "\n------------------------------"
+        f"\nHost        : {CONFIG.get('host')}"
+        f"\nPort        : {CONFIG.get('port')}"
+        f"\nUser        : {CONFIG.get('user')}"
+        f"\nContainer   : {CONFIG.get('container')}"
+        f"\nBackup dir  : {CONFIG.get('backup_dir')}"
+        f"\nJson file   : {CONFIG_FILE}"
+        "\n------------------------------"
+    )
+
+    sys.exit(0)

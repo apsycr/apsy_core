@@ -145,7 +145,7 @@ async def device(request: Request):
 
 		"git" : {
 			"user" : "apsycr",
-			"token" : "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",
+			"token" : "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",
 			"git" : "apsycr",
 			"repo" : "provision"
 		},
