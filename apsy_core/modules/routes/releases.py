@@ -71,7 +71,18 @@ def build_release_package(
 				).decode("utf-8")
 			})
 
-	return files
+	return {
+
+		"files":
+			files,
+
+		"post_install":
+			manifest.get(
+				"post_install",
+				[]
+			)
+
+	}
 
 router = APIRouter(
 	prefix="/releases",
@@ -154,7 +165,7 @@ async def last(request: Request):
 
 		for release in releases:
 
-			release["files"] = build_release_package(
+			release["package"] = build_release_package(
 				release["tipo"],
 				release["version"]
 			)
