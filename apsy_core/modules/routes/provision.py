@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request
 
+from modules.config import load_config
+
 from modules.services.provisions import (
 	create_session,
 	validate_token_from_db,
@@ -64,6 +66,8 @@ async def init(request: Request):
 
 @router.post("/device")
 async def device(request: Request):
+
+	config = load_config()
 
 	token = request.headers.get(
 		"Authorization",
@@ -145,14 +149,14 @@ async def device(request: Request):
 
 		"git" : {
 			"user" : "apsycr",
-			"token" : "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",
+			"token" : config["git"]["PAT"],
 			"git" : "apsycr",
 			"repo" : "provision"
 		},
 
 		"ghcr": {
 			"user": "apsycr",
-			"token": "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"
+			"token": config["git"]["GHCR"]
 		}
 
 	}
