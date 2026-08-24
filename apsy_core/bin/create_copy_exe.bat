@@ -40,12 +40,6 @@ REM =====================================
 
 copy /Y "dist\%TOOL_NAME%.exe" "%DESTINO%\"
 
-REM =====================================
-REM COPIAR JSON
-REM =====================================
-
-copy /Y "apsydb.json" "%DESTINO%\"
-
 echo.
 echo Release creada:
 echo %DESTINO%

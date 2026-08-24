@@ -207,7 +207,7 @@ class db_release:
 		idrelease
 	):
 
-		ejecutar_api(
+		return ejecutar_api(
 			"""
 			INSERT INTO crm_audit_release
 			(
@@ -226,5 +226,5 @@ class db_release:
 				idcrm_release_terminal,
 				idrelease
 			),
-			"none"
+			"id"
 		)

@@ -73,7 +73,7 @@ parser.add_argument(
 parser.add_argument(
     "-p",
     "--password",
-    default="Login2Help"
+    default=""
 )
 
 parser.add_argument(
@@ -445,10 +445,13 @@ def restore(file):
             "--default-character-set=utf8mb4",
 
             "-u", MYSQL_USER,
-            f"-p{MYSQL_PASSWORD}",
-            "-A",
-            MYSQL_DATABASE
+            "-A"
         ]
+
+        if MYSQL_PASSWORD:
+            cmd.append(f"-p{MYSQL_PASSWORD}")
+
+        cmd.append(MYSQL_DATABASE)
 
     # =================================
     # LEGACY

@@ -129,7 +129,7 @@ async def device(request: Request):
 		assign_trial_plan(tenant_id)
 
 		install_token = register_install(
-		    tenant_id
+			tenant_id
 		)
 
 		crm_state = "new_customer"
@@ -163,21 +163,21 @@ async def device(request: Request):
 
 
 @router.post(
-    "/install_validate"
+	"/install_validate"
 )
 async def install_validate(
-    request: Request
+	request: Request
 ):
 
-    token = request.headers.get(
-        "Authorization",
-        ""
-    ).replace(
-        "Bearer ",
-        ""
-    )
+	token = request.headers.get(
+		"Authorization",
+		""
+	).replace(
+		"Bearer ",
+		""
+	)
 
-    return validate_install(token)
+	return validate_install(token)
 
 
 @router.post("/update")
@@ -213,5 +213,120 @@ async def update(request: Request):
 		"updates": get_updates(
 			client_version
 		)
+
+	}
+
+@router.post("/release_result"
+)
+async def release_result(
+	data: dict
+):
+
+	results = data.get(
+		"results",
+		[]
+	)
+
+	if not results:
+
+		return {
+			"ok": False,
+			"message": "No results"
+		}
+
+	processed = []
+
+	for result in results:
+
+		idaudit = result.get(
+			"idaudit"
+		)
+
+		if not idaudit:
+
+			processed.append({
+				"ok": False,
+				"message": "Audit missing"
+			})
+
+			continue
+
+		audit = ejecutar_api(
+			"""
+			SELECT
+				id,
+				idcrm_release,
+				idrelease,
+				estado
+			FROM crm_audit_release
+			WHERE id = %s and estado = 'PENDING'
+			""",
+			(idaudit,),
+			"one"
+		)
+
+		if not audit:
+
+			processed.append({
+				"idaudit": idaudit,
+				"success": False,
+				"message": "Audit not found"
+			})
+
+			continue
+
+		estado = result.get(
+			"estado"
+		)
+
+		error_log = result.get(
+			"error_log",
+			""
+		)
+
+		fecha_fin = datetime.now().strftime(
+			"%Y-%m-%d %H:%M:%S"
+		)
+
+		ejecutar_api(
+			"""
+			UPDATE crm_audit_release
+			SET
+				estado = %s,
+				error_log = %s,
+				fecha_fin = %s
+			WHERE id = %s
+			""",
+			(
+				estado,
+				error_log,
+				fecha_fin,
+				idaudit
+			),
+			"none"
+		)
+
+		processed.append({
+
+			"idaudit":
+				idaudit,
+
+			"estado":
+				estado,
+
+			"success":
+				True
+
+		})
+
+	return {
+
+		"ok": True,
+
+		"processed":
+			len(processed),
+
+		"results":
+			processed
 
 	}

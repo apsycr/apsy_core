@@ -170,7 +170,7 @@ async def last(request: Request):
 				release["version"]
 			)
 
-			db_release.audit_create(
+			release["idaudit"] = db_release.audit_create(
 				terminal["id"],
 				release["id"]
 			)
