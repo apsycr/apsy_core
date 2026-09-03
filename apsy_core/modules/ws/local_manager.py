@@ -196,11 +196,12 @@ class LocalWSManager:
 
 		if msg_type == "refresh_solicitud":
 
-		    await self.refresh_solicitud(
-		        data["solicitud"]
-		    )
+			await self.refresh_solicitud(
+				data["solicitud"],
+				data["auditar"]
+			)
 
-		    return
+			return
 
 		# -----------------------------------------------------
 		# Inicializar Workflow
@@ -337,8 +338,15 @@ class LocalWSManager:
 
 			except Exception:
 
-				disconnected.append(
-					websocket
+				# disconnected.append(
+				# 	websocket
+				# )
+
+				logger.error(
+					"❌ ERROR WS usuario=%s websocket=%s error=%r",
+					idusuario,
+					id(websocket),
+					e
 				)
 
 
@@ -361,7 +369,7 @@ class LocalWSManager:
 			return
 
 		data = ejecutar_api("""
-				CALL sp_getSolicitudes(%s,0,4,0)
+				CALL sp_getSolicitudes(%s,0,4,0,0,0)
 			""",
 			(idusuario,),
 			"one")
@@ -453,19 +461,31 @@ class LocalWSManager:
 		)
 
 	async def refresh_solicitud(
-	    self,
-	    idsolicitud
+		self,
+		idsolicitud,
+		idauditar
 	):
 
-	    result = ejecutar_api(
-	        "call sp_getSolicitudes(%s,0,5,0)",
-	        (idsolicitud,),
-	        "all"
-	    )
+		result = ejecutar_api(
+			"call sp_getSolicitudes(0,0,5,0,%s,%s)",
+			(idsolicitud,idauditar,),
+			"all"
+		)
 
-	    for row in result:
+		for row in result:
 
-	        self.workflow_cache[row['usuario']]['solicitudes'] = row['solicitudes']
+			idusuario = row['usuario']
+
+			if idusuario not in self.workflow_cache:
+				continue
+
+			self.workflow_cache[idusuario]['solicitudes'] = int(row['solicitudes'])
+
+			await self.emit_workflow(
+				1,
+				idusuario,
+				self.workflow_cache[idusuario]
+			)
 
 	# =========================================================
 	# DESCONECTAR

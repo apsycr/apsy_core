@@ -96,6 +96,7 @@ def start_api(config):
             "/internal/",
             "/ping",
             "/device/register",
+            "/device/login",
             "/auth/refresh",
             "/auth/code",
             "/mail/code",

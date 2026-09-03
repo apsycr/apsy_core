@@ -57,6 +57,20 @@ async def websocket_entry(websocket: WebSocket):
 
         await websocket.close()
 
+@router.get("/local/workflow")
+async def debug_workflow():
+
+    return {
+        "cache": local_ws_manager.workflow_cache,
+        "connections": {
+            str(idtenant): {
+                str(idusuario): len(sockets)
+                for idusuario, sockets in users.items()
+            }
+            for idtenant, users in local_ws_manager.connections.items()
+        }
+    }
+
 @router.websocket("/local/connect")
 async def websocket_local(websocket: WebSocket):
 
