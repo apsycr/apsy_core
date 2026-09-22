@@ -1,0 +1,58 @@
+{
+    "tabla": "clientes",
+    "version": 1,
+
+    "create_table": "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY, razon_social TEXT, cedula TEXT, nombre_fantasia TEXT, idtipocliente INTEGER, credito REAL, plazo INTEGER, idsucursal INTEGER, idmoneda INTEGER, saldo DECIMAL(23,5))",
+
+    "server_side": {
+
+        "table_name": "clientes",
+
+        "pull": {
+
+            "sql": "SELECT id, nombre, cedula, web, idtipocliente, credito, plazo, idsucursal, idmoneda, saldo FROM clientes WHERE idsucursal = %s AND id > %s AND id <= @@last_id ORDER BY id",
+
+            "args": [
+                "idsucursal",
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'clientes' JOIN sync_ids c ON c.id_servidor = a.idmoneda and c.tabla = 'monedas' JOIN sync_ids d ON d.id_servidor = a.idtipocliente and d.tabla = 'tipo_clientes",
+
+            "update": {
+                "set": "SET a.razon_social = ?, a.cedula = ?, a.nombre_fantasia = ?, a.idtipocliente = ?, a.credito = ?, a.plazo = ?, a.idsucursal = ?, a.idmoneda = ?, a.saldo = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+            "sql": "SELECT id, razon_social, cedula, nombre_fantasia, idtipocliente, credito, plazo, idsucursal, idmoneda, saldo FROM clientes WHERE idsucursal = %s",
+            "args": [
+                "idsucursal"
+            ]
+        }
+    },
+
+    "client_side": {
+
+        "version": 1,
+
+        "pull": 0,
+
+        "push": {
+            "select": "b.razon_social,b.cedula,b.nombre_fantasia,d.id_servidor,b.credito,b.plazo,b.idsucursal,e.id_servidor,b,saldo",
+            "join": "JOIN clientes b ON b.id = a.idregistro LEFT JOIN sync_ids c ON c.id_local = b.id and c.tabla = 'clientes' JOIN sync_ids d ON d.id_local = b.idtipocliente and d.tabla = 'tipo_clientes' JOIN sync_ids e ON e.id_local = b.idmoneda and e.tabla = 'monedas'",
+            "id": "b.id",
+            "insert":{
+                "columns":"nombre,cedula,web,idtipocliente,credito,plazo,idsucursal,idmoneda,saldo"
+            },
+            "update": {
+                "setter": "nombre = %s,cedula = %s,web = %s,idtipocliente = %s,credito = %s,plazo = %s,idsucursal = %s,saldo = %s"
+            },
+            "table_name":"clientes"
+        }
+    }
+}

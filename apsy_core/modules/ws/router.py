@@ -1,5 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from modules.services.mirror_manager import mirror_manager
+from modules.services import push_watchdog
 
 import logging
 
@@ -13,93 +14,135 @@ router = APIRouter(prefix="/ws")
 @router.websocket("/connect")
 async def websocket_entry(websocket: WebSocket):
 
-    await websocket.accept()
+	await websocket.accept()
 
-    try:
-        while True:
-            data = await websocket.receive_json()
+	try:
+		while True:
+			data = await websocket.receive_json()
 
-            msg_type = data.get("type")
+			msg_type = data.get("type")
 
-            if msg_type == "action_response":
+			if msg_type == "action_response":
 
-                await mirror_manager.handle_message(
-                    data
-                )
+				await mirror_manager.handle_message(
+					data
+				)
 
-            elif msg_type in ("handshake", "auth"):
+			elif msg_type in ("handshake", "auth"):
 
-                await ws_connect(websocket, data)
-            else:
-                await websocket.send_json({
-                    "success": 0,
-                    "message": "Primer mensaje inválido"
-                })
+				await ws_connect(websocket, data)
 
-                await websocket.close(code=1008)
-                return
+			elif msg_type == "pull_pending_ok":
 
-    except WebSocketDisconnect:
+				push_watchdog.pull_pending_ok(
+					websocket.device_id
+				)
 
-        logger.warning("🔌 Cliente desconectado")
 
-    except Exception as e:
+			elif msg_type == "pull_ok":
 
-        logger.exception("❌ WS ERROR")
+				push_watchdog.pull_ok(
+					websocket.device_id
+				)
+			else:
+				await websocket.send_json({
+					"success": 0,
+					"message": "Primer mensaje inválido"
+				})
 
-        try:
-            await websocket.send_json({
-                "success": 0,
-                "message": str(e)
-            })
-        except:
-            pass
+				await websocket.close(code=1008)
+				return
 
-        await websocket.close()
+	except WebSocketDisconnect:
+
+		logger.warning("🔌 Cliente desconectado")
+
+		device_id = getattr(
+			websocket,
+			"device_id",
+			None
+		)
+
+		device_type = getattr(
+			websocket,
+			"device_type",
+			None
+		)
+
+		if (
+			device_type == "app"
+			and device_id
+		):
+
+			push_watchdog.unregister_device(
+				device_id
+			)
+
+	except Exception as e:
+
+		logger.exception("❌ WS ERROR")
+
+		try:
+			await websocket.send_json({
+				"success": 0,
+				"message": str(e)
+			})
+		except:
+			pass
+
+		await websocket.close()
+
+@router.get("/local/push/status")
+async def debug_push_watchdog():
+
+	return push_watchdog.status()
 
 @router.get("/local/workflow")
 async def debug_workflow():
 
-    return {
-        "cache": local_ws_manager.workflow_cache,
-        "connections": {
-            str(idtenant): {
-                str(idusuario): len(sockets)
-                for idusuario, sockets in users.items()
-            }
-            for idtenant, users in local_ws_manager.connections.items()
-        }
-    }
+	return {
+		"cache": local_ws_manager.workflow_cache,
+		"connections": {
+			str(idtenant): {
+				str(idusuario): len(sockets)
+				for idusuario, sockets in users.items()
+			}
+			for idtenant, users in local_ws_manager.connections.items()
+		}
+	}
 
 @router.websocket("/local/connect")
 async def websocket_local(websocket: WebSocket):
 
-    await websocket.accept()
+	await websocket.accept()
 
-    try:
+	try:
 
-        await local_ws_manager.connect(
-            websocket
-        )
+		connected = await local_ws_manager.connect(
+			websocket
+		)
 
-        while True:
-            data = await websocket.receive_json()
-            
-            await local_ws_manager.handle(
-                websocket,
-                data
-            )
+		if not connected:
+			return 
 
-    except WebSocketDisconnect:
+		while True:
+			data = await websocket.receive_json()
+			
+			await local_ws_manager.handle(
+				websocket,
+				data
+			)
 
-        await local_ws_manager.disconnect(
-            websocket
-        )
+	except WebSocketDisconnect:
 
-    except Exception:
+		await local_ws_manager.disconnect(
+			websocket
+		)
 
-        await local_ws_manager.disconnect(
-            websocket
-        )
+	except Exception:
 
-        raise
+		await local_ws_manager.disconnect(
+			websocket
+		)
+
+		raise

@@ -1,0 +1,40 @@
+{
+    "tabla": "monedas",
+
+    "create_table": "CREATE TABLE monedas (id INTEGER NOT NULL, nombre TEXT NOT NULL, simbolo TEXT, tipo_cambio DECIMAL(23,5) DEFAULT 1, codigo TEXT, PRIMARY KEY (id))",
+
+    "server_side": {
+
+        "table_name": "monedas",
+
+        "pull": {
+
+            "sql": "SELECT id, nombre, simbolo, valor+suma as tipo_cambio, codigo FROM monedas WHERE id > %s AND id <= @@last_id ORDER BY id",
+
+            "args": [
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'monedas'",
+
+            "update": {
+                "set": "SET a.nombre = ?, a.simbolo = ?, a.tipo_cambio = ?, a.codigo = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+
+            "sql": "SELECT id, nombre, simbolo, tipo_cambio, codigo FROM monedas",
+
+            "args": []
+        }
+    },
+
+    "client_side": {
+        "version": 1
+    }
+}

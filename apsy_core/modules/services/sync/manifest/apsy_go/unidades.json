@@ -1,0 +1,40 @@
+{
+    "tabla": "unidades",
+
+    "create_table": "CREATE TABLE unidades (id INTEGER NOT NULL, nombre TEXT NOT NULL, abreviatura TEXT, idtipo INTEGER, factor DECIMAL(23,5) DEFAULT 1, PRIMARY KEY (id))",
+
+    "server_side": {
+
+        "table_name": "unidades",
+
+        "pull": {
+
+            "sql": "SELECT id, nombre, abreviatura, idtipo, cantidad FROM unidades WHERE id > %s AND id <= @@last_id ORDER BY id",
+
+            "args": [
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'unidades'",
+
+            "update": {
+                "set": "SET a.nombre = ?, a.abreviatura = ?, a.idtipo = ?, a.factor = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+
+            "sql": "SELECT id, nombre, abreviatura, idtipo, factor FROM unidades",
+
+            "args": []
+        }
+    },
+
+    "client_side": {
+        "version": 1
+    }
+}

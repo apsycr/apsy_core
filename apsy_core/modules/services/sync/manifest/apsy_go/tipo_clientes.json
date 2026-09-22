@@ -1,0 +1,40 @@
+{
+    "tabla": "tipo_clientes",
+
+    "create_table": "CREATE TABLE tipo_clientes (id INT NOT NULL,nombre VARCHAR(100) NOT NULL, PRIMARY KEY (id) )",
+
+    "server_side": {
+
+        "table_name": "tipoclientes",
+
+        "pull": {
+
+            "sql": "SELECT id, nombre FROM tipoclientes WHERE id > %s AND id <= @@last_id ORDER BY id",
+
+            "args": [
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'tipo_clientes'",
+
+            "update": {
+                "set": "SET a.nombre = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+
+            "sql": "SELECT id, nombre FROM tipo_clientes",
+
+            "args": []
+        }
+    },
+
+    "client_side": {
+        "version": 1
+    }
+}

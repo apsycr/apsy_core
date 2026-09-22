@@ -1,84 +1,114 @@
 from modules.services.mirror_manager import mirror_manager
+from modules.services import push_watchdog
+
 from modules.db import ejecutar
 
 async def handle_auth(websocket, data):
 
-    token = data.get("token")
+	token = data.get("token")
 
-    if not token:
-        raise Exception("Auth sin token")
+	if not token:
+		raise Exception("Auth sin token")
 
-    row = validar_token(token)
 
-    if not row:
-        raise Exception(
-            "Token inválido"
-        )
+	row = validar_token(token)
 
-    if row["activo"] != 1:
-        raise Exception(
-            "Servidor inactivo"
-        )
+	if not row:
+		raise Exception(
+			"Token inválido"
+		)
 
-    mirrors = obtener_mirrors(
-        row["id"]
-    )
+	if row["activo"] != 1:
+		raise Exception(
+			"Servidor inactivo"
+		)
 
-    if mirrors:
+	# ========================================================
+	# WS SERVER
+	# ========================================================
 
-        await mirror_manager.register(
-            row["id"],
-            websocket
-        )
+	websocket.device_id = row["id"]
+	websocket.device_type = row["tipo"]
 
-    await websocket.send_json({
-        "success": 1,
-        "type": "auth_ok"
-    })
+	if row["tipo"] == "ws_server":
+
+		mirrors = obtener_mirrors(
+			row["id"]
+		)
+
+		if mirrors:
+
+			await mirror_manager.register(
+				row["id"],
+				websocket
+			)
+
+	# ========================================================
+	# APP DEVICE
+	# ========================================================
+
+	elif row["tipo"] == "app":
+
+		push_watchdog.register_device(
+			row,
+			websocket
+		)
+
+	# ========================================================
+	# AUTH OK
+	# ========================================================
+
+	await websocket.send_json({
+		"success": 1,
+		"type": "auth_ok"
+	})
 
 def validar_token(token):
 
-    server = ejecutar("""
-        SELECT
-            id,
-            token,
-            activo
-        FROM ws_servers
-        WHERE token=%s
-        LIMIT 1
-    """, (token,), "one")
+	server = ejecutar("""
+		SELECT
+			id,
+			token,
+			activo
+		FROM ws_servers
+		WHERE token=%s
+		LIMIT 1
+	""", (token,), "one")
 
-    if server:
-        server["tipo"] = "ws_server"
-        return server
+	if server:
+		server["tipo"] = "ws_server"
+		return server
 
-    device = ejecutar("""
-        SELECT
-            id,
-            token,
-            estado AS activo,
-            app
-        FROM ws_devices
-        WHERE token=%s
-        LIMIT 1
-    """, (token,), "one")
+	device = ejecutar("""
+		SELECT
+			id,
+			device_id,
+			token,
+			estado AS activo,
+			app,
+			sucursal_id,
+			terminal_id
+		FROM ws_devices
+		WHERE token=%s
+		LIMIT 1
+	""", (token,), "one")
 
-    if device:
-        device["tipo"] = "app"
-        return device
+	if device:
+		device["tipo"] = "app"
+		return device
 
-    return None
+	return None
 
 def obtener_mirrors(ws_server_id):
 
-    return ejecutar("""
+	return ejecutar("""
 
-        SELECT
-            id,
-            alias
-        FROM ws_sucursales
-        WHERE ws_server_id = %s
-        AND activo = 1
-        AND alias <> ''
+		SELECT
+			id,
+			alias
+		FROM ws_sucursales
+		WHERE ws_server_id = %s
+		AND activo = 1
+		AND alias <> ''
 
-    """, (ws_server_id,), "all")
+	""", (ws_server_id,), "all")

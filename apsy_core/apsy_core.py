@@ -10,9 +10,10 @@ from modules.ws_client import start_ws_client
 from modules.health import health_loop
 from modules.config import load_config
 
-from modules.scheduler import start as start_scheduler, add_cron
+from modules.scheduler import start as start_scheduler, add_cron, add_interval
 from modules.startup import on_startup
 from modules.services.irobot import leer_correos
+from modules.services.push_worker import push_worker
 
 from modules.db import init_pools
 
@@ -21,88 +22,91 @@ from modules.db import init_pools
 LOG_DIR = Path("/logs")
 
 LOG_DIR.mkdir(
-    parents=True,
-    exist_ok=True
+	parents=True,
+	exist_ok=True
 )
 
 logging.basicConfig(
-    filename=LOG_DIR / "ws-server-local.log",
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+	filename=LOG_DIR / "ws-server-local.log",
+	level=logging.WARNING,
+	format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
 logger = logging.getLogger("ws-server-local")
+# Silenciar logs INFO de librerías
+logging.getLogger("apscheduler").setLevel(logging.WARNING)
+logging.getLogger("uvicorn").setLevel(logging.WARNING)
+logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
 shutdown_event = threading.Event()
 
 def shutdown_handler(signum, frame):
-    logger.info("Shutdown signal received")
-    shutdown_event.set()
+	logger.info("Shutdown signal received")
+	shutdown_event.set()
 
 signal.signal(signal.SIGTERM, shutdown_handler)
 signal.signal(signal.SIGINT, shutdown_handler)
 
 
 def main():
-    logger.info("Starting APSY_CORE")
-    config = load_config()
-    init_pools() #INICIALIZAR BASE DE DATOS
-    
-    # -------- STARTUP (cambio de día)
-    on_startup()
+	logger.info("Starting APSY_CORE")
+	config = load_config()
+	init_pools() #INICIALIZAR BASE DE DATOS
+	
+	# -------- STARTUP (cambio de día)
+	on_startup()
 
-    # -------- Scheduler
-    if config["services"]["irobot"]["enabled"]:
-        add_cron(
-            leer_correos,
-            config["services"]["irobot"]["hours"],
-            "irobot_mail"
-        )
+	# -------- Scheduler
+	if config["services"]["irobot"]["enabled"]:
+		add_cron(
+			leer_correos,
+			config["services"]["irobot"]["hours"],
+			"irobot_mail"
+		)
 
-    start_scheduler()
+	if config["services"]["push"]["enabled"]:
+		add_interval(
+			push_worker,
+			config["services"]["push"]["seconds"],
+			"push_worker"
+		)
 
-    # -------- Threads existentes
+	start_scheduler()
 
-    api_thread = threading.Thread(
-        target=start_api,
-        args=(config,),
-        daemon=True
-    )
+	# -------- Threads existentes
 
-    if config['ws_server']['client']:
-        logger.info("Starting WS Client")
-        ws_thread = threading.Thread(
-            target=start_ws_client,
-            args=(config,shutdown_event,),
-            daemon=True
-        )
+	api_thread = threading.Thread(
+		target=start_api,
+		args=(config,),
+		daemon=True
+	)
 
-        ws_thread.start()
+	if config['ws_server']['client']:
+		logger.info("Starting WS Client")
+		ws_thread = threading.Thread(
+			target=start_ws_client,
+			args=(config,shutdown_event,),
+			daemon=True
+		)
+
+		ws_thread.start()
 
 
-    health_thread = threading.Thread(
-        target=health_loop,
-        args=(config,),
-        daemon=True
-    )
+	health_thread = threading.Thread(
+		target=health_loop,
+		args=(config,),
+		daemon=True
+	)
 
-    #ws_server_thread = threading.Thread(
-    #    target=start_ws_server,
-    #    args=(config,),
-    #    daemon=True
-    #)
+	api_thread.start()
+	health_thread.start()
 
-    api_thread.start()
-    health_thread.start()
-    #ws_server_thread.start()
+	logger.info("All services started")
 
-    logger.info("All services started")
+	while not shutdown_event.is_set():
+		time.sleep(1)
 
-    while not shutdown_event.is_set():
-        time.sleep(1)
-
-    logger.info("Stopping ws-server-local")
-
+	logger.info("Stopping ws-server-local")
 
 if __name__ == "__main__":
-    main()
+	main()

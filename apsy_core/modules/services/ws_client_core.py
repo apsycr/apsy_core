@@ -11,7 +11,6 @@ from modules.services.ws_settings import get_setting, set_setting, sync_ws_mirro
 
 logger = logging.getLogger("ws-server-local")
 
-
 def start_ws_client(config,shutdown_event):
     ws_url = f'{config["cloud"]["ws_url"]}connect'
 

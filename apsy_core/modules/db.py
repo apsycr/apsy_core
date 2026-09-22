@@ -189,17 +189,17 @@ def log_error(sql, error):
 # =========================
 # 🚀 EJECUTOR PRINCIPAL
 # =========================
-def ejecutar_api(sql, params=None,fetch="one",request=None):
+def ejecutar_api(sql, params=None,fetch="one",request=None,dictionary=True):
     sql, params = inject_safe_context(
         sql,
         params,
         request
     )
     
-    return ejecutar(sql,params,fetch,'db_api')
+    return ejecutar(sql,params,fetch,'db_api',dictionary)
 
 
-def ejecutar(sql, params=None, fetch="one",db="db"):
+def ejecutar(sql, params=None, fetch="one",db="db",dictionary=True):
     """
     fetch:
         - "one"  → un registro
@@ -213,7 +213,7 @@ def ejecutar(sql, params=None, fetch="one",db="db"):
 
     try:
         conn = get_connection(db)
-        cur = conn.cursor(dictionary=True)
+        cur = conn.cursor(dictionary=dictionary)
 
         cur.execute(sql, params or ())
         

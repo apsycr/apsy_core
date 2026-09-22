@@ -1,0 +1,43 @@
+{
+    "tabla": "tipo_marcas_empleados",
+
+    "create_table": "CREATE TABLE IF NOT EXISTS tipo_marcas_empleados (id INTEGER PRIMARY KEY, nombre TEXT, label TEXT, idtipo INTEGER)",
+
+    "server_side": {
+
+        "table_name": "tipomarcaempleados",
+
+        "pull": {
+
+            "sql": "SELECT id, nombre, label, idtipo FROM tipomarcaempleados WHERE idsucursal = %s AND id > %s AND id <= @@last_id ORDER BY id",
+
+            "args": [
+                "idsucursal",
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'tipo_marcas_empleados'",
+
+            "update": {
+                "set": "SET a.nombre = ?, a.label = ?, a.idtipo = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+
+            "sql": "SELECT id, nombre, label, idtipo FROM tipomarcaempleados WHERE idsucursal = %s",
+
+            "args": [
+                "idsucursal"
+            ]
+        }
+    },
+
+    "client_side": {
+        "version": 6
+    }
+}
