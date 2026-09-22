@@ -1,0 +1,5 @@
+{
+    "tabla": "inventario",
+
+    "create_table": "CREATE TABLE inventario (id INTEGER PRIMARY KEY, idproducto INTEGER NOT NULL, idsucursal INTEGER NOT NULL, existencia REAL DEFAULT 0)"
+}
