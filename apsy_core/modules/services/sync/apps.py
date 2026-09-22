@@ -20,20 +20,20 @@ SYNC_APPS = {
 		"unidades",
 
 		"clientes",
-		"telefonos",
-		"correos",
-		"direccion",
+		#"telefonos",
+		#"correos",
+		#"direccion",
 
-		"productos",
-		"productos_precios",
+		#"productos",
+		#"productos_precios",
 
-		"rutas",
-		"clientes_rutas",
+		#"rutas",
+		#"clientes_rutas",
 
 		"inventario",
 
-		"cierre_caja",
-		"detalle_cierre_caja"
+		#"cierre_caja",
+		#"detalle_cierre_caja"
 	}
 
 }
