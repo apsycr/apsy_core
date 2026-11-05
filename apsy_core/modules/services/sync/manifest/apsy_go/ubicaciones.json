@@ -1,0 +1,38 @@
+{
+    "tabla": "ubicaciones",
+    "create_table": "CREATE TABLE ubicaciones (id INTEGER PRIMARY KEY, tabla TEXT NOT NULL, idregistro INTEGER NOT NULL, idbarrio INTEGER, direccion TEXT, latitud REAL, longitud REAL)",
+    "server_side": {
+        "table_name": "ubicaciones",
+        "pull": {
+            "sql": "SELECT idubicacion AS id, 'clientes' AS tabla, idfila AS idregistro, idbarrio, direccion, latitud, longitud FROM ubicaciones WHERE idtabla IN (2) AND idubicacion > %s AND idubicacion <= @@last_id ORDER BY idubicacion",
+            "args": ["ultimo_id"],
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'ubicaciones'",
+            "update": {
+                "set": "SET a.tabla = ?, a.idregistro = ?, a.idbarrio = ?, a.direccion = ?, a.latitud = ?, a.longitud = ?"
+            }
+        },
+        "push": {
+            "enabled": 0
+        },
+        "queue": {
+            "sql": "SELECT idubicacion AS id, 'clientes' AS tabla, idfila AS idregistro, idbarrio, direccion, latitud, longitud FROM ubicaciones WHERE idtabla IN (2)",
+            "args": []
+        }
+    },
+    "client_side": {
+        "version": 1,
+        "pull": 0,
+        "push": {
+            "select": "2,c.id_servidor,b.idbarrio,b.direccion,b.latitud,b.longitud",
+            "join": "JOIN ubicaciones b ON b.id = a.idregistro LEFT JOIN sync_ids c ON c.id_local = b.idregistro AND c.tabla = 'clientes'",
+            "id": "b.idubicacion",
+            "insert": {
+                "columns": "idtabla,idfila,idbarrio,direccion,latitud,longitud"
+            },
+            "update": {
+                "setter": "idtabla = %s,idfila = %s,idbarrio = %s,direccion = %s,latitud = %s,longitud = %s"
+            },
+            "table_name": "ubicaciones"
+        }
+    }
+}
