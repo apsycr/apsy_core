@@ -105,7 +105,8 @@ async def register_device(
             s.pfisico                   AS nombrefantasia,
             group_concat(t.telefono)    AS telefonosucursal,
             group_concat(c.correo)      AS correosucursal,
-            s.idtiponegocio             AS tiposucursal
+            s.idtiponegocio             AS tiposucursal,
+            ifnull(p.pagina_inicio,'facturacion')             AS inicio
 
         FROM usuarios u
 
@@ -119,6 +120,9 @@ async def register_device(
         INNER JOIN telefonos t
             ON t.idfila = s.id
             and t.idtabla = 39
+
+        LEFT JOIN ws_local.ws_usuarios_ajustes p
+            on p.idusuario = u.id
 
         WHERE u.id > 0 and u.user = %s
         and u.clave = md5(aes_encrypt(%s,'lt6969'))
@@ -198,6 +202,12 @@ async def register_device(
             "correosucursal": rs["correosucursal"],
 
             "tiposucursal": rs["tiposucursal"]
+
+        },
+
+        "app": {
+
+            "pagina_inicial" : rs["inicio"],
 
         }
 

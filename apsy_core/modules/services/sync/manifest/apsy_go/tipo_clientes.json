@@ -1,7 +1,7 @@
 {
     "tabla": "tipo_clientes",
 
-    "create_table": "CREATE TABLE tipo_clientes (id INT NOT NULL,nombre VARCHAR(100) NOT NULL, PRIMARY KEY (id) )",
+    "create_table": "CREATE TABLE tipo_clientes (id INTEGER PRIMARY KEY,nombre VARCHAR(100))",
 
     "server_side": {
 
@@ -28,7 +28,7 @@
 
         "queue": {
 
-            "sql": "SELECT id, nombre FROM tipo_clientes",
+            "sql": "SELECT id, nombre FROM tipoclientes",
 
             "args": []
         }

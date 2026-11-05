@@ -1,0 +1,38 @@
+{
+    "tabla": "correos",
+    "create_table": "CREATE TABLE correos (id INTEGER PRIMARY KEY, tabla TEXT NOT NULL, idregistro INTEGER NOT NULL, correo TEXT NOT NULL)",
+    "server_side": {
+        "table_name": "correos",
+        "pull": {
+            "sql": "SELECT idcorreo AS id, 'clientes' AS tabla, idfila AS idregistro, correo FROM correos WHERE idtabla IN (2) AND idcorreo > %s AND idcorreo <= @@last_id ORDER BY idcorreo",
+            "args": ["ultimo_id"],
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'correos'",
+            "update": {
+                "set": "SET a.tabla = ?, a.idregistro = ?, a.correo = ?"
+            }
+        },
+        "push": {
+            "enabled": 0
+        },
+        "queue": {
+            "sql": "SELECT idcorreo AS id, 'clientes' AS tabla, idfila AS idregistro, correo FROM correos WHERE idtabla IN (2)",
+            "args": []
+        }
+    },
+    "client_side": {
+        "version": 1,
+        "pull": 0,
+        "push": {
+            "select": "2,c.id_servidor,b.correo",
+            "join": "JOIN correos b ON b.id = a.idregistro LEFT JOIN sync_ids c ON c.id_local = b.idregistro AND c.tabla = 'clientes'",
+            "id": "b.idcorreo",
+            "insert": {
+                "columns": "idtabla,idfila,correo"
+            },
+            "update": {
+                "setter": "idtabla = %s,idfila = %s,correo = %s"
+            },
+            "table_name": "correos"
+        }
+    }
+}

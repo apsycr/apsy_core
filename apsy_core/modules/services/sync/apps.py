@@ -20,8 +20,8 @@ SYNC_APPS = {
 		"unidades",
 
 		"clientes",
-		#"telefonos",
-		#"correos",
+		"telefonos",
+		"correos",
 		#"direccion",
 
 		#"productos",
@@ -30,7 +30,7 @@ SYNC_APPS = {
 		#"rutas",
 		#"clientes_rutas",
 
-		"inventario",
+		#"inventario",
 
 		#"cierre_caja",
 		#"detalle_cierre_caja"

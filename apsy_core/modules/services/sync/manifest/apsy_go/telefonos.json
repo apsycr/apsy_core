@@ -1,0 +1,38 @@
+{
+    "tabla": "telefonos",
+    "create_table": "CREATE TABLE telefonos (id INTEGER PRIMARY KEY, tabla TEXT NOT NULL, idregistro INTEGER NOT NULL, telefono TEXT NOT NULL, idtipo INTEGER)",
+    "server_side": {
+        "table_name": "telefonos",
+        "pull": {
+            "sql": "SELECT id, 'clientes' AS tabla, idfila AS idregistro, telefono, idtipotel AS idtipo FROM telefonos WHERE idtabla IN (2) AND id > %s AND id <= @@last_id ORDER BY id",
+            "args": ["ultimo_id"],
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'telefonos'",
+            "update": {
+                "set": "SET a.tabla = ?, a.idregistro = ?, a.telefono = ?, a.idtipo = ?"
+            }
+        },
+        "push": {
+            "enabled": 0
+        },
+        "queue": {
+            "sql": "SELECT id, 'clientes' AS tabla, idfila AS idregistro, telefono, idtipotel AS idtipo FROM telefonos WHERE idtabla IN (2)",
+            "args": []
+        }
+    },
+    "client_side": {
+        "version": 1,
+        "pull": 0,
+        "push": {
+            "select": "b.telefono,b.idtipo,c.id_servidor",
+            "join": "JOIN telefonos b ON b.id = a.idregistro LEFT JOIN sync_ids c ON c.id_local = b.idregistro AND c.tabla = 'clientes'",
+            "id": "b.id",
+            "insert": {
+                "columns": "idtabla,idfila,telefono,idtipotel"
+            },
+            "update": {
+                "setter": "idtabla = %s,idfila = %s,telefono = %s,idtipotel = %s"
+            },
+            "table_name": "telefonos"
+        }
+    }
+}

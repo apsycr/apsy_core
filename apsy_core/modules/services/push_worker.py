@@ -108,15 +108,23 @@ def insertar(cursor, row, data):
 
 def actualizar(cursor, row, data):
 
-	setter = row["setter"].replace("?", "%s")
+    setter = row["setter"].replace("?", "%s")
 
-	sql = f"""
-		UPDATE {row["tabla_server"]}
-		SET {setter}
-		WHERE id = %s
-	"""
+    positions = json.loads(row["positions"]) \
+        if isinstance(row["positions"], str) \
+        else row["positions"]
 
-	params = list(data)
-	params.append(row["idregistro"])
+    params = [
+        data[posicion]
+        for posicion in positions
+    ]
 
-	cursor.execute(sql, params)
+    params.append(row["idregistro"])
+
+    sql = f"""
+        UPDATE {row["tabla_server"]}
+        SET {setter}
+        WHERE id = %s
+    """
+
+    cursor.execute(sql, params)

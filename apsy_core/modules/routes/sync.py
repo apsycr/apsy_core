@@ -51,10 +51,18 @@ async def login(request: Request):
     device = check_token(token,tipo)
 
     if not device:
-        raise HTTPException(
-            status_code=401,
-            detail="Token inválido"
-        )
+        # raise HTTPException(
+        #     status_code=401,
+        #     detail="Token inválido"
+        # )
+        
+        return JSONResponse(
+                status_code=401,
+                content={
+                    "ok": False,
+                    "msg": "Token inválido"
+                }
+            )
 
     body = await request.json()
     

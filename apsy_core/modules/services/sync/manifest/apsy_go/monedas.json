@@ -1,7 +1,7 @@
 {
     "tabla": "monedas",
 
-    "create_table": "CREATE TABLE monedas (id INTEGER NOT NULL, nombre TEXT NOT NULL, simbolo TEXT, tipo_cambio DECIMAL(23,5) DEFAULT 1, codigo TEXT, PRIMARY KEY (id))",
+    "create_table": "CREATE TABLE monedas (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, simbolo TEXT, tipo_cambio DECIMAL(23,5) DEFAULT 1, codigo TEXT)",
 
     "server_side": {
 
@@ -9,7 +9,7 @@
 
         "pull": {
 
-            "sql": "SELECT id, nombre, simbolo, valor+suma as tipo_cambio, codigo FROM monedas WHERE id > %s AND id <= @@last_id ORDER BY id",
+            "sql": "SELECT id, nombre, simbolo, valor + suma AS tipo_cambio, codigo FROM monedas WHERE id > %s AND id <= @@last_id ORDER BY id",
 
             "args": [
                 "ultimo_id"
@@ -28,13 +28,13 @@
 
         "queue": {
 
-            "sql": "SELECT id, nombre, simbolo, tipo_cambio, codigo FROM monedas",
+            "sql": "SELECT id, nombre, simbolo, valor + suma AS tipo_cambio, codigo FROM monedas",
 
             "args": []
         }
     },
 
     "client_side": {
-        "version": 1
+        "version": 2
     }
 }

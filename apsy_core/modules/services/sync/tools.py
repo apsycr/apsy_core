@@ -340,11 +340,14 @@ def compile_push(body, tipo):
 			row["ins_columns"],
 			row["data"],
 			row["setter"],
-			"PENDIENTE"
+			"PENDIENTE",
+			row["after_insert"],
+			row["after_update"],
+			row["positions"],
 		))
 
 	placeholders = ",".join(
-		["(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(valores)
+		["(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"] * len(valores)
 	)
 
 	params = []
@@ -365,7 +368,10 @@ def compile_push(body, tipo):
 			ins_columns,
 			data,
 			setter,
-			estado
+			estado,
+			after_insert,
+			after_update,
+			positions
 		)
 		VALUES {placeholders}
 		ON DUPLICATE KEY UPDATE

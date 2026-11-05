@@ -1,6 +1,5 @@
 {
     "tabla": "marcas_empleados",
-    "version": 2,
 
     "create_table": "CREATE TABLE IF NOT EXISTS marcas_empleados (id INTEGER PRIMARY KEY, idsucursal INTEGER, idempleado INTEGER, idtipo INTEGER, fecha DATE, entrada TEXT, salida TEXT)",
 

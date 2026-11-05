@@ -1,0 +1,73 @@
+{
+    "tabla": "productos",
+
+    "create_table": "CREATE TABLE productos (id INTEGER PRIMARY KEY, nombre TEXT, codigo TEXT, cabys VARCHAR(30), idsucursal INTEGER, idmoneda INTEGER, idunidad INTEGER,idmarca INTEGER, idtipo INTEGER, idfamilia INTEGER, costo DECIMAL(23,5), precio DECIMAL(23,5), ganancia DECIMAL(23,5), utilidad DECIMAL(5,2), iva DECIMAL(4,1), tipo_iva INTEGER, is_variable INTEGER DEFAULT 0 CHECK(is_variable in(0,1)), is_iva DEFAULT 0 CHECK(is_iva in(0,1)), manage_stock INTEGER DEFAULT 0 CHECK(is_variable in(0,1)), max_descuento DECIMAL(12,2), min_venta DECIMAL(5,2)",
+
+    "server_side": {
+
+        "table_name": "productos",
+
+        "pull": {
+
+            "sql": "select a.id,a.nombre,a.codigo,b.cabys,a.idsucursal,a.idmoneda,a.idunidad,a.idmarca,0 as idtipo,0 as idfamilia,a.costo,a.venta/(1+(if(a.exoneracion,a.exoneracion,0)/100)) as precio,a.ganancia,if(a.costo, (a.ganancia*100)/a.costo ,0) as utilidad,a.exoneracion as iva,a.timv as tipo_iva, isvariable as is_variable,ininvc as is_iva, isinventariado as manage_stock, b.a.maxdescuento as max_descuento, b.margenventa as min_venta from productos a left join msproductos b on a.id = b.idproducto join ajustessucursales c on c.idsucursal = a.idsucursal where a.idsucursal = %s and a.id > %s AND id <= @@last_id GROUP BY a.id ORDER BY a.id",
+
+            "args": [
+                "idsucursal",
+                "ultimo_id"
+            ],
+
+            "lookup": "JOIN sync_ids b ON b.id_servidor = ? AND b.tabla = 'productos' JOIN sync_ids c ON c.id_servidor = a.idmoneda AND c.tabla = 'monedas' JOIN sync_ids d ON d.id_servidor = a.idunidad AND d.tabla = 'unidades'",
+
+            "update": {
+                "set": "SET a.nombre = ?, a.codigo = ?, a.cabys = ?, a.idsucursal = ?, a.idmoneda = ?, a.idunidad = ?, a.idmarca = ?, a.idtipo = ?, a.idfamilia = ? , a.costo = ? , a.precio = ?,, a.ganancia = ?, , a.utilidad = ?, a.iva = ?, a.tipo_iva = ?, a.is_variable = ?, a.is_iva = ?,a.manage_stock = ? a.max_descuento = ?, a.min_venta = ?"
+            }
+        },
+
+        "push": {
+            "enabled": 0
+        },
+
+        "queue": {
+
+            "sql": "select a.id,a.nombre,a.codigo,b.cabys,a.idsucursal,a.idmoneda,a.idunidad,a.idmarca,0 as idtipo,0 as idfamilia,a.costo,a.venta/(1+(if(a.exoneracion,a.exoneracion,0)/100)) as precio,a.ganancia,if(a.costo, (a.ganancia*100)/a.costo ,0) as utilidad,a.exoneracion as iva,a.timv as tipo_iva, a.isvariable from productos a left join msproductos b on a.id = b.idproducto join ajustessucursales c on c.idsucursal = a.idsucursal where a.idsucursal = %s",
+
+            "args": [
+                "idsucursal"
+            ]
+        }
+    },
+
+    "client_side": {
+
+        "version": 1,
+
+        "pull": 0,
+
+        "push": {
+
+            "select": "b.codigo,'' as codigointerno,b.nombre,b.costo,b.ganancia,b.iva,d.id_servidor as idunidad,0 as minimo,0 as maximo,b.max_descuento as maxdescuento,0 as idmarca,,@@idusuario,e.id_servidor as idmoneda,0 as idvarios,b.idsucursal,b.manage_stock as isinventariado,0 as idheredado, b.is_variable as isvariable,0 as cantequiv,0 as isgravamen,0 as comision,b.precio*(1+(b.iva/100) ) as venta,1 as divisa,'' as idexoneracion,b.tipo_iva",
+
+            "join": "JOIN productos b ON b.id = a.idregistro LEFT JOIN sync_ids c ON c.id_local = b.id and c.tabla = 'productos' JOIN sync_ids d ON d.id_local = b.idtipocliente AND d.tabla = 'monedas' JOIN sync_ids e ON e.id_local = b.idmoneda AND e.tabla = 'unidades'",
+
+            "id": "b.id",
+
+            "insert": {
+                "columns": "nombre,codigo,codigointerno,idsucursal,idmoneda,idunidad,idmarca,costo,venta,ganancia,exonera,exoneracion,timv,minimo, maximo,idusuario,idvarios,isinventariado"
+            },
+
+            "update": {
+                "setter": "nombre = %s,cedula = %s,web = %s,idtipocliente = %s,credito = %s,plazo = %s,idsucursal = %s,idmoneda = %s,saldo = %s"
+            },
+
+            "after_insert":{
+
+            },
+
+            "after_update":{
+
+            },
+
+            "table_name": "clientes"
+        }
+    }
+}

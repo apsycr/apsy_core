@@ -1,3 +1,5 @@
+name: apsy_dev
+
 services:
 
   mariadb:
@@ -23,15 +25,18 @@ services:
       - --collation-server=utf8mb4_unicode_ci
 
     volumes:
-      - ${APSY_DATA}/mariadb:/var/lib/mysql
+      - mariadb_data:/var/lib/mysql
       - ./mariadb/my.cnf:/etc/mysql/conf.d/apsy.cnf:ro
       - ./mariadb/init:/docker-entrypoint-initdb.d
 
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost"]
+      test:
+        - CMD-SHELL
+        - 'mariadb-admin ping -h 127.0.0.1 -uroot -p"$${MYSQL_ROOT_PASSWORD}" --silent'
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
 
     stop_grace_period: 30s
 
@@ -89,3 +94,7 @@ services:
 
     environment:
       - TZ=America/Costa_Rica
+
+volumes:
+
+  mariadb_data:
